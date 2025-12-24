@@ -1,23 +1,35 @@
-class Prefs {
-  static final Map<String, Object> _cache = <String, Object>{};
+import 'package:shared_preferences/shared_preferences.dart';
 
+import '../core/services/injection_container.dart';
+
+class Prefs {
   static Future<void> init() async {
-    // In-memory placeholder until storage integration is added.
+    if (sl.isRegistered<SharedPreferences>()) {
+      return;
+    }
+    final prefs = await SharedPreferences.getInstance();
+    sl.registerSingleton<SharedPreferences>(prefs);
   }
 
+  static SharedPreferences get _prefs => sl<SharedPreferences>();
+
   static Future<void> setString(String key, String value) async {
-    _cache[key] = value;
+    await _prefs.setString(key, value);
   }
 
   static Future<String?> getString(String key) async {
-    final value = _cache[key];
-    if (value is String) {
-      return value;
-    }
-    return null;
+    return _prefs.getString(key);
+  }
+
+  static Future<void> setBool(String key, bool value) async {
+    await _prefs.setBool(key, value);
+  }
+
+  static Future<bool?> getBool(String key) async {
+    return _prefs.getBool(key);
   }
 
   static Future<void> clear() async {
-    _cache.clear();
+    await _prefs.clear();
   }
 }

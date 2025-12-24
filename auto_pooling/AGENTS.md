@@ -9,6 +9,7 @@ This file defines how agents must operate in this repo. Follow it strictly.
 - Say no when required: if the request is impossible, unsafe, or conflicts with these rules, state that clearly and ask for direction.
 - Prefer permanent fixes: solve root causes, not symptoms. Avoid quick patches or bandaids.
 - Keep logic readable: prefer simple control flow, small methods, and clear naming. Do not overcomplicate logic.
+- Never use setState
 
 ## Project structure (strict)
 Do not invent new layout conventions. Follow the existing structure:
