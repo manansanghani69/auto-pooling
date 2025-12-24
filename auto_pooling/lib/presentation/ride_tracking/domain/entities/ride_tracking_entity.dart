@@ -1,0 +1,3 @@
+class RideTrackingEntity {
+  const RideTrackingEntity();
+}

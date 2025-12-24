@@ -1,0 +1,3 @@
+class RideTrackingModel {
+  const RideTrackingModel();
+}

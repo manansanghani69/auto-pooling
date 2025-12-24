@@ -1,0 +1,3 @@
+class RideRequestEntity {
+  const RideRequestEntity();
+}
