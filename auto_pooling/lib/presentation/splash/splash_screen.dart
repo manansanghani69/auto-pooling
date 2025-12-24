@@ -17,18 +17,18 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    // WidgetsBinding.instance.addPostFrameCallback((_) {
-    //   Future.delayed(SplashConstants.navigationDelay, () {
-    //     if (!mounted) {
-    //       return;
-    //     }
-    //     Navigator.of(context).pushReplacement(
-    //       MaterialPageRoute<void>(
-    //         builder: (_) => const AuthScreen(),
-    //       ),
-    //     );
-    //   });
-    // });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Future.delayed(SplashConstants.navigationDelay, () {
+        if (!mounted) {
+          return;
+        }
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute<void>(
+            builder: (_) => const AuthScreen(),
+          ),
+        );
+      });
+    });
   }
 
   @override

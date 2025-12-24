@@ -50,7 +50,7 @@ class SplashBottomGlow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final double height = MediaQuery.of(context).size.height;
-    final double size = height * 0.4;
+    final double size = height * 0.5;
     final double offset = -size * 0.2;
 
     return Positioned(
@@ -81,7 +81,6 @@ class SplashGlowCircle extends StatelessWidget {
       height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: color.withAlpha(100),
         boxShadow: [
           BoxShadow(
             color: color,
