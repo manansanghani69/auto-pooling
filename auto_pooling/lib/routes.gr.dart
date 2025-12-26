@@ -16,9 +16,13 @@ abstract class _$AppRouter extends RootStackRouter {
   @override
   final Map<String, PageFactory> pagesMap = {
     AuthOtpRoute.name: (routeData) {
+      final args = routeData.argsAs<AuthOtpRouteArgs>();
       return AutoRoutePage<dynamic>(
         routeData: routeData,
-        child: const AuthOtpScreen(),
+        child: AuthOtpScreen(
+          authBloc: args.authBloc,
+          key: args.key,
+        ),
       );
     },
     AuthRoute.name: (routeData) {
@@ -74,16 +78,40 @@ abstract class _$AppRouter extends RootStackRouter {
 
 /// generated route for
 /// [AuthOtpScreen]
-class AuthOtpRoute extends PageRouteInfo<void> {
-  const AuthOtpRoute({List<PageRouteInfo>? children})
-      : super(
+class AuthOtpRoute extends PageRouteInfo<AuthOtpRouteArgs> {
+  AuthOtpRoute({
+    required AuthBloc authBloc,
+    Key? key,
+    List<PageRouteInfo>? children,
+  }) : super(
           AuthOtpRoute.name,
+          args: AuthOtpRouteArgs(
+            authBloc: authBloc,
+            key: key,
+          ),
           initialChildren: children,
         );
 
   static const String name = 'AuthOtpRoute';
 
-  static const PageInfo<void> page = PageInfo<void>(name);
+  static const PageInfo<AuthOtpRouteArgs> page =
+      PageInfo<AuthOtpRouteArgs>(name);
+}
+
+class AuthOtpRouteArgs {
+  const AuthOtpRouteArgs({
+    required this.authBloc,
+    this.key,
+  });
+
+  final AuthBloc authBloc;
+
+  final Key? key;
+
+  @override
+  String toString() {
+    return 'AuthOtpRouteArgs{authBloc: $authBloc, key: $key}';
+  }
 }
 
 /// generated route for

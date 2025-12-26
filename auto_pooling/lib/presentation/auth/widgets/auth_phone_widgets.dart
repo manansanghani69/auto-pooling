@@ -1,6 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../common/theme/text_style/app_text_styles.dart';
 import '../../../i18n/localization.dart';
@@ -8,6 +9,8 @@ import '../../../routes.dart';
 import '../../../widgets/primary_button.dart';
 import '../../../widgets/primary_text_field.dart';
 import '../../../widgets/styling/app_colors.dart';
+import '../bloc/auth_bloc.dart';
+import '../bloc/auth_event.dart';
 import '../constants/auth_constants.dart';
 import 'auth_shared_widgets.dart';
 
@@ -329,6 +332,9 @@ class AuthPhoneNumberField extends StatelessWidget {
           keyboardType: TextInputType.number,
           textInputAction: TextInputAction.done,
           validator: (value) => _validatePhoneNumber(context, value),
+          onChanged: (value) => context.read<AuthBloc>().add(
+                AuthPhoneNumberChangedEvent(phoneNumber: value.trim()),
+              ),
           inputFormatters: [
             FilteringTextInputFormatter.digitsOnly,
             LengthLimitingTextInputFormatter(AuthConstants.phoneNumberLength),
@@ -373,7 +379,9 @@ class AuthGetOtpButton extends StatelessWidget {
     if (formState == null || !formState.validate()) {
       return;
     }
-    context.pushRoute(const AuthOtpRoute());
+    final AuthBloc authBloc = context.read<AuthBloc>();
+    authBloc.add(const AuthOtpTimerStartedEvent());
+    context.pushRoute(AuthOtpRoute(authBloc: authBloc));
   }
 
   @override

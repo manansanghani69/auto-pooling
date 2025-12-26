@@ -84,6 +84,8 @@ class AppLocalizations {
 
   String get authOtpResendTime => '00:24';
 
+  String get authOtpResendAction => 'Resend code';
+
   String get authOtpVerifyButton => 'Verify';
 
   String get profileTitle => 'Profile';

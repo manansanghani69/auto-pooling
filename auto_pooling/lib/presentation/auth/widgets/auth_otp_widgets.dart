@@ -1,13 +1,16 @@
+import 'package:auto_pooling/presentation/auth/bloc/auth_event.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../common/theme/text_style/app_text_styles.dart';
 import '../../../i18n/localization.dart';
+import '../../../widgets/primary_button.dart';
 import '../../../widgets/styling/app_colors.dart';
+import '../bloc/auth_bloc.dart';
 import '../constants/auth_constants.dart';
 import 'auth_shared_widgets.dart';
-import '../../../widgets/primary_button.dart';
 
 class AuthOtpHeader extends StatelessWidget {
   const AuthOtpHeader({super.key});
@@ -92,10 +95,7 @@ class AuthOtpPhoneRow extends StatelessWidget {
     return Wrap(
       crossAxisAlignment: WrapCrossAlignment.center,
       spacing: 8.0,
-      children: const [
-        AuthOtpPhoneText(),
-        AuthOtpEditButton(),
-      ],
+      children: const [AuthOtpPhoneText(), AuthOtpEditButton()],
     );
   }
 }
@@ -105,8 +105,16 @@ class AuthOtpPhoneText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final String phoneNumber = context.select<AuthBloc, String>(
+      (bloc) => bloc.state.phoneNumber,
+    );
+    final String countryCode = context.localization.authPhoneCountryCode;
+    final String displayNumber = phoneNumber.isEmpty
+        ? countryCode
+        : '$countryCode $phoneNumber';
+
     return Text(
-      context.localization.authOtpPhoneExample,
+      displayNumber,
       style: AppTextStyles.p2Regular.copyWith(
         fontWeight: FontWeight.w600,
         color: context.currentTheme.textNeutralPrimary,
@@ -174,10 +182,7 @@ class _AuthOtpInputFieldsState extends State<AuthOtpInputFields> {
       _otpLength,
       (_) => TextEditingController(),
     );
-    _focusNodes = List<FocusNode>.generate(
-      _otpLength,
-      (_) => FocusNode(),
-    );
+    _focusNodes = List<FocusNode>.generate(_otpLength, (_) => FocusNode());
   }
 
   @override
@@ -265,7 +270,7 @@ class AuthOtpDigitField extends StatelessWidget {
         keyboardType: TextInputType.number,
         textAlign: TextAlign.center,
         style: AppTextStyles.h2SemiBold.copyWith(
-          fontSize: 24,
+          fontSize: 16,
           color: context.currentTheme.textNeutralPrimary,
         ),
         inputFormatters: [
@@ -280,12 +285,16 @@ class AuthOtpDigitField extends StatelessWidget {
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(AuthConstants.otpDigitRadius),
             borderSide: BorderSide(
+              width: 2,
               color: context.currentTheme.textNeutralSecondary.withAlpha(51),
             ),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(AuthConstants.otpDigitRadius),
-            borderSide: BorderSide(color: context.currentTheme.primary),
+            borderSide: BorderSide(
+              color: context.currentTheme.primary,
+              width: 2,
+            ),
           ),
         ),
       ),
@@ -305,8 +314,23 @@ class AuthOtpTimerSection extends StatelessWidget {
 class AuthOtpTimerChip extends StatelessWidget {
   const AuthOtpTimerChip({super.key});
 
+  String _formatTimer(int seconds) {
+    final int minutes = seconds ~/ 60;
+    final int remainingSeconds = seconds % 60;
+
+    final String minutesText = minutes.toString().padLeft(2, '0');
+    final String secondsText = remainingSeconds.toString().padLeft(2, '0');
+
+    return '$minutesText:$secondsText';
+  }
+
   @override
   Widget build(BuildContext context) {
+    final int secondsRemaining = context.select<AuthBloc, int>(
+      (bloc) => bloc.state.otpSecondsRemaining,
+    );
+    final String timerText = _formatTimer(secondsRemaining);
+
     return DecoratedBox(
       decoration: BoxDecoration(
         color: context.currentTheme.backgroundPrimary.withAlpha(153),
@@ -320,24 +344,54 @@ class AuthOtpTimerChip extends StatelessWidget {
           horizontal: AuthConstants.otpTimerPaddingHorizontal,
           vertical: AuthConstants.otpTimerPaddingVertical,
         ),
-        child: RichText(
-          text: TextSpan(
-            style: AppTextStyles.p3Medium.copyWith(
-              color: context.currentTheme.textNeutralSecondary,
-            ),
-            children: [
-              TextSpan(
-                text: context.localization.authOtpResendPrefix,
-              ),
-              TextSpan(
-                text: context.localization.authOtpResendTime,
-                style: AppTextStyles.p3Medium.copyWith(
-                  color: context.currentTheme.primary,
-                  fontWeight: FontWeight.w600,
+        child: secondsRemaining == 0
+            ? AuthOtpResendAction(
+                onPressed: () => context
+                    .read<AuthBloc>()
+                    .add(const AuthOtpTimerStartedEvent()),
+              )
+            : RichText(
+                text: TextSpan(
+                  style: AppTextStyles.p3Medium.copyWith(
+                    color: context.currentTheme.textNeutralSecondary,
+                  ),
+                  children: [
+                    TextSpan(text: context.localization.authOtpResendPrefix),
+                    TextSpan(
+                      text: timerText,
+                      style: AppTextStyles.p3Medium.copyWith(
+                        color: context.currentTheme.primary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
+      ),
+    );
+  }
+}
+
+class AuthOtpResendAction extends StatelessWidget {
+  final VoidCallback onPressed;
+
+  const AuthOtpResendAction({required this.onPressed, super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return TextButton(
+      onPressed: onPressed,
+      style: TextButton.styleFrom(
+        padding: EdgeInsets.zero,
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        minimumSize: Size.zero,
+        foregroundColor: context.currentTheme.primary,
+      ),
+      child: Text(
+        context.localization.authOtpResendAction,
+        style: AppTextStyles.p3Medium.copyWith(
+          color: context.currentTheme.primary,
+          fontWeight: FontWeight.w600,
         ),
       ),
     );

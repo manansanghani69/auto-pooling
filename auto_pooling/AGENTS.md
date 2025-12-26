@@ -4,6 +4,7 @@ This file defines how agents must operate in this repo. Follow it strictly.
 
 ## Non-negotiable agent rules
 - Scope control: do only what the user explicitly asked for. No refactors, formatting changes, dependency updates, or extra files unless requested.
+- Non-API completion: when APIs are not provided, implement all app-side functionality that does not depend on them.
 - Plan first: propose a short plan and review it with the user before implementing. If the plan must change, stop and re-confirm.
 - Ask questions: if requirements are missing, unclear, or a big decision is needed, ask before coding.
 - Say no when required: if the request is impossible, unsafe, or conflicts with these rules, state that clearly and ask for direction.

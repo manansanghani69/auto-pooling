@@ -1,17 +1,24 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
+import 'bloc/auth_bloc.dart';
 import 'constants/auth_constants.dart';
 import 'widgets/auth_otp_widgets.dart';
 
 @RoutePage()
 class AuthOtpScreen extends StatelessWidget {
-  const AuthOtpScreen({super.key});
+  final AuthBloc authBloc;
+
+  const AuthOtpScreen({required this.authBloc, super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body: AuthOtpBody(),
+    return BlocProvider<AuthBloc>.value(
+      value: authBloc,
+      child: const Scaffold(
+        body: AuthOtpBody(),
+      ),
     );
   }
 }
