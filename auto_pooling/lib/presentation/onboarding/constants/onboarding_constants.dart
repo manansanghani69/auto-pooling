@@ -6,6 +6,7 @@ class OnboardingConstants {
   static const double heroMaxWidth = 320.0;
   static const double heroAspectRatio = 4 / 3;
   static const double heroImageRadius = 20.0;
+  static const double heroImageBorderRadius = 22.5;
   static const double heroShadowBlur = 12.0;
   static const double heroShadowOffsetY = 6.0;
   static const double heroGlowPrimarySize = 240.0;
