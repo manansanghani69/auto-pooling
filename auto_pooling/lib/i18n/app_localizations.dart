@@ -50,6 +50,42 @@ class AppLocalizations {
 
   String get authSubtitle => 'Sign in and manage your rider profile.';
 
+  String get authPhoneTitlePrefix => 'Let\'s get you\n';
+
+  String get authPhoneTitleHighlight => 'moving';
+
+  String get authPhoneSubtitle =>
+      'We\'ll send a verification code to your phone number to continue.';
+
+  String get authPhoneCodeLabel => 'Code';
+
+  String get authPhoneCountryCode => '+91';
+
+  String get authPhoneNumberLabel => 'Mobile Number';
+
+  String get authPhoneNumberHint => '98700XXXX';
+
+  String get authPhoneNumberEmptyError => 'Enter your mobile number';
+
+  String get authPhoneNumberInvalidError =>
+      'Enter a valid 10-digit mobile number';
+
+  String get authGetOtpButton => 'Get OTP';
+
+  String get authOtpTitle => 'Verification';
+
+  String get authOtpSubtitle => 'Enter the 4-digit code sent to';
+
+  String get authOtpPhoneExample => '+91 99990 12345';
+
+  String get authOtpEditAction => 'Edit';
+
+  String get authOtpResendPrefix => 'Resend code in ';
+
+  String get authOtpResendTime => '00:24';
+
+  String get authOtpVerifyButton => 'Verify';
+
   String get profileTitle => 'Profile';
 
   String get profileSubtitle => 'View and update rider details.';

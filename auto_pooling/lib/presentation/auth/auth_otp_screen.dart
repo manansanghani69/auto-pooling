@@ -2,22 +2,22 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 
 import 'constants/auth_constants.dart';
-import 'widgets/auth_phone_widgets.dart';
+import 'widgets/auth_otp_widgets.dart';
 
 @RoutePage()
-class AuthScreen extends StatelessWidget {
-  const AuthScreen({super.key});
+class AuthOtpScreen extends StatelessWidget {
+  const AuthOtpScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
-      body: AuthPhoneBody(),
+      body: AuthOtpBody(),
     );
   }
 }
 
-class AuthPhoneBody extends StatelessWidget {
-  const AuthPhoneBody({super.key});
+class AuthOtpBody extends StatelessWidget {
+  const AuthOtpBody({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -30,13 +30,15 @@ class AuthPhoneBody extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SizedBox(height: AuthConstants.headerTopPadding),
-            AuthPhoneHeader(),
+            AuthOtpHeader(),
             SizedBox(height: AuthConstants.sectionSpacing),
-            AuthHeroCard(),
+            AuthOtpHeadlineSection(),
             SizedBox(height: AuthConstants.sectionSpacing),
-            AuthPhoneHeadlineSection(),
+            AuthOtpInputSection(),
             SizedBox(height: AuthConstants.sectionSpacing),
-            AuthPhoneFormSection(),
+            AuthOtpTimerSection(),
+            SizedBox(height: AuthConstants.sectionSpacing),
+            AuthOtpVerifyButton(),
             SizedBox(height: AuthConstants.bottomSpacing),
           ],
         ),
