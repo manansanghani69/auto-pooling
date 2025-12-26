@@ -346,9 +346,9 @@ class AuthOtpTimerChip extends StatelessWidget {
         ),
         child: secondsRemaining == 0
             ? AuthOtpResendAction(
-                onPressed: () => context
-                    .read<AuthBloc>()
-                    .add(const AuthOtpTimerStartedEvent()),
+                onPressed: () => context.read<AuthBloc>().add(
+                  const AuthOtpTimerStartedEvent(),
+                ),
               )
             : RichText(
                 text: TextSpan(
