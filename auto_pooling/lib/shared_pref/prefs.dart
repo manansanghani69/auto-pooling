@@ -3,14 +3,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../core/services/injection_container.dart';
 
 class Prefs {
-  static Future<void> init() async {
-    if (sl.isRegistered<SharedPreferences>()) {
-      return;
-    }
-    final prefs = await SharedPreferences.getInstance();
-    sl.registerSingleton<SharedPreferences>(prefs);
-  }
-
   static SharedPreferences get _prefs => sl<SharedPreferences>();
 
   static Future<void> setString(String key, String value) async {

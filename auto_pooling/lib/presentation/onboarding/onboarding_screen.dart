@@ -1,9 +1,11 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../routes.dart';
 import '../../shared_pref/pref_keys.dart';
 import '../../shared_pref/prefs.dart';
+import 'bloc/onboarding_bloc.dart';
 import 'constants/onboarding_constants.dart';
 import 'widgets/onboarding_widgets.dart';
 
@@ -17,28 +19,25 @@ class OnboardingScreen extends StatefulWidget {
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
   late final PageController _pageController;
-  int _currentPage = 0;
+  late final OnboardingBloc _onboardingBloc;
 
   @override
   void initState() {
     super.initState();
     _pageController = PageController();
+    _onboardingBloc = OnboardingBloc();
   }
 
   @override
   void dispose() {
     _pageController.dispose();
+    _onboardingBloc.close();
     super.dispose();
   }
 
-  void _handlePageChanged(int index) {
-    setState(() {
-      _currentPage = index;
-    });
-  }
-
   void _handleContinue() {
-    if (_currentPage < OnboardingConstants.totalPages - 1) {
+    final int currentPage = _onboardingBloc.state.currentPage;
+    if (currentPage < OnboardingConstants.totalPages - 1) {
       _pageController.nextPage(
         duration: OnboardingConstants.pageAnimationDuration,
         curve: Curves.easeOut,
@@ -62,13 +61,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: OnboardingBody(
-        pageController: _pageController,
-        currentPage: _currentPage,
-        onPageChanged: _handlePageChanged,
-        onContinue: _handleContinue,
-        onSkip: _handleSkip,
+    return BlocProvider<OnboardingBloc>.value(
+      value: _onboardingBloc,
+      child: Scaffold(
+        body: OnboardingBody(
+          pageController: _pageController,
+          onContinue: _handleContinue,
+          onSkip: _handleSkip,
+        ),
       ),
     );
   }

@@ -1,21 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../common/theme/text_style/app_text_styles.dart';
 import '../../../i18n/localization.dart';
 import '../../../widgets/styling/app_colors.dart';
+import '../bloc/onboarding_bloc.dart';
+import '../bloc/onboarding_event.dart';
 import '../constants/onboarding_constants.dart';
 
 class OnboardingBody extends StatelessWidget {
   final PageController pageController;
-  final int currentPage;
-  final ValueChanged<int> onPageChanged;
   final VoidCallback onSkip;
   final VoidCallback onContinue;
 
   const OnboardingBody({
     required this.pageController,
-    required this.currentPage,
-    required this.onPageChanged,
     required this.onSkip,
     required this.onContinue,
     super.key,
@@ -30,13 +29,9 @@ class OnboardingBody extends StatelessWidget {
           Expanded(
             child: OnboardingPageView(
               controller: pageController,
-              onPageChanged: onPageChanged,
             ),
           ),
-          OnboardingFooter(
-            currentPage: currentPage,
-            onContinue: onContinue,
-          ),
+          OnboardingFooter(onContinue: onContinue),
         ],
       ),
     );
@@ -112,11 +107,9 @@ class OnboardingSkipButtonLabel extends StatelessWidget {
 
 class OnboardingPageView extends StatelessWidget {
   final PageController controller;
-  final ValueChanged<int> onPageChanged;
 
   const OnboardingPageView({
     required this.controller,
-    required this.onPageChanged,
     super.key,
   });
 
@@ -124,7 +117,11 @@ class OnboardingPageView extends StatelessWidget {
   Widget build(BuildContext context) {
     return PageView(
       controller: controller,
-      onPageChanged: onPageChanged,
+      onPageChanged: (index) {
+        context
+            .read<OnboardingBloc>()
+            .add(OnboardingPageChangedEvent(index: index));
+      },
       children: const [
         OnboardingPageOne(),
         OnboardingPageTwo(),
@@ -748,11 +745,9 @@ class OnboardingSubtitleText extends StatelessWidget {
 }
 
 class OnboardingFooter extends StatelessWidget {
-  final int currentPage;
   final VoidCallback onContinue;
 
   const OnboardingFooter({
-    required this.currentPage,
     required this.onContinue,
     super.key,
   });
@@ -768,7 +763,7 @@ class OnboardingFooter extends StatelessWidget {
       ),
       child: Column(
         children: [
-          OnboardingIndicatorRow(currentPage: currentPage),
+          const OnboardingIndicatorRow(),
           const SizedBox(height: OnboardingConstants.footerContentSpacing),
           OnboardingContinueButton(onPressed: onContinue),
         ],
@@ -778,15 +773,13 @@ class OnboardingFooter extends StatelessWidget {
 }
 
 class OnboardingIndicatorRow extends StatelessWidget {
-  final int currentPage;
-
-  const OnboardingIndicatorRow({
-    required this.currentPage,
-    super.key,
-  });
+  const OnboardingIndicatorRow({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final int currentPage =
+        context.select<OnboardingBloc, int>((bloc) => bloc.state.currentPage);
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [

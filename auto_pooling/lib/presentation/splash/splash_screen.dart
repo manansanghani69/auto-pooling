@@ -34,9 +34,10 @@ class _SplashScreenState extends State<SplashScreen> {
     if (!mounted) {
       return;
     }
-    final PageRouteInfo<void> nextRoute = hasCompletedOnboarding
-        ? const AuthRoute()
-        : const OnboardingRoute();
+    final PageRouteInfo<void> nextRoute = const OnboardingRoute();
+    // final PageRouteInfo<void> nextRoute = hasCompletedOnboarding
+    //     ? const AuthRoute()
+    //     : const OnboardingRoute();
     context.router.replace(nextRoute);
   }
 
