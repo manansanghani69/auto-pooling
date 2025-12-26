@@ -2,24 +2,25 @@ import 'package:flutter/material.dart';
 
 import 'common/theme/app_themes_data.dart';
 import 'constants/app_constants.dart';
-import 'core/services/injection_container.dart';
-import 'presentation/splash/splash_screen.dart';
+import 'initialize_app.dart';
+import 'routes.dart';
 
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await configureDependencies();
+  await initializeApp();
   runApp(const MainApp());
 }
 
 class MainApp extends StatelessWidget {
   const MainApp({super.key});
 
+  static final AppRouter _appRouter = AppRouter();
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
       title: AppConstants.appName,
       theme: AppThemesData.lightTheme,
-      home: const SplashScreen(),
+      routerConfig: _appRouter.config(),
     );
   }
 }

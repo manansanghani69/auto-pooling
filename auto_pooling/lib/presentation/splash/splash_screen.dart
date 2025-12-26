@@ -1,7 +1,9 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 
-import '../auth/auth_screen.dart';
+import '../../routes.dart';
+import '../../shared_pref/pref_keys.dart';
+import '../../shared_pref/prefs.dart';
 import 'constants/splash_constants.dart';
 import 'widgets/splash_widgets.dart';
 
@@ -18,24 +20,30 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Future.delayed(SplashConstants.navigationDelay, () {
-        if (!mounted) {
-          return;
-        }
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute<void>(
-            builder: (_) => const AuthScreen(),
-          ),
-        );
-      });
+      _navigateFromSplash();
     });
+  }
+
+  Future<void> _navigateFromSplash() async {
+    await Future.delayed(SplashConstants.navigationDelay);
+    if (!mounted) {
+      return;
+    }
+    final bool hasCompletedOnboarding =
+        await Prefs.getBool(PrefKeys.onboardingCompleted) ?? false;
+    if (!mounted) {
+      return;
+    }
+    final PageRouteInfo<void> nextRoute = const OnboardingRoute();
+    // final PageRouteInfo<void> nextRoute = hasCompletedOnboarding
+    //     ? const AuthRoute()
+    //     : const OnboardingRoute();
+    context.router.replace(nextRoute);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: const SplashBody(),
-    );
+    return Scaffold(body: const SplashBody());
   }
 }
 
@@ -50,11 +58,7 @@ class SplashBody extends StatelessWidget {
         SafeArea(
           child: Column(
             children: [
-              Expanded(
-                child: Center(
-                  child: const SplashContentContainer(),
-                ),
-              ),
+              Expanded(child: Center(child: const SplashContentContainer())),
               const SplashFooter(),
             ],
           ),
