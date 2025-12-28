@@ -11,6 +11,10 @@ app.use(bodyParser.json());
 app.use('/v1/auth', authRoutes);
 
 // health
-app.get('/health', (req, res) => res.json({ ok: true }));
+app.get('/health', (req, res) => res.status(200).json({
+  status: 'success',
+  code: 200,
+  data: { ok: true },
+}));
 
 export default app;
