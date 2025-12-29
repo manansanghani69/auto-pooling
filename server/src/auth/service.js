@@ -1,21 +1,19 @@
 // src/auth/service.js
-import bcrypt from 'bcrypt';
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import { pool } from '../common/db.js';
 import { redisClient } from '../common/redis.js';
 import { v4 as uuidv4 } from 'uuid';
+import { USER_SAFE_COLUMNS } from '../common/userColumns.js';
 import dotenv from 'dotenv';
 dotenv.config();
 
-const SALT_ROUNDS = 10;
 const JWT_SECRET = process.env.JWT_SECRET;
 const ACCESS_EXPIRES = process.env.JWT_EXPIRES_IN || '15m';
 const REFRESH_DAYS = Number(process.env.REFRESH_TOKEN_EXPIRES_DAYS || 30);
 const OTP_TTL_SECONDS = Number(process.env.OTP_TTL_SECONDS || 300);
 const OTP_DIGITS = Number(process.env.OTP_DIGITS || 4);
 const RETURN_OTP = process.env.OTP_RETURN_IN_RESPONSE === 'true' || process.env.NODE_ENV !== 'production';
-const USER_SAFE_COLUMNS = 'id, phone, name, email, profile_photo, gender, role, created_at';
 
 function resolveOtpTtlSeconds() {
     return Number.isFinite(OTP_TTL_SECONDS) && OTP_TTL_SECONDS > 0 ? OTP_TTL_SECONDS : 300;
@@ -39,55 +37,14 @@ export function shouldReturnOtp() {
     return RETURN_OTP;
 }
 
-async function hashPlaceholderPassword() {
-    // Keep legacy password column populated even though OTP is used.
-    return bcrypt.hash(uuidv4(), SALT_ROUNDS);
-}
-
 export async function createUser({ phone, name, role = 'rider' }) {
-    const hashed = await hashPlaceholderPassword();
-    const sql = `INSERT INTO users (phone, name, password, role) VALUES ($1,$2,$3,$4) RETURNING ${USER_SAFE_COLUMNS}`;
-    const res = await pool.query(sql, [phone, name, hashed, role]);
+    const sql = `INSERT INTO users (phone, name, role) VALUES ($1,$2,$3) RETURNING ${USER_SAFE_COLUMNS}`;
+    const res = await pool.query(sql, [phone, name, role]);
     return res.rows[0];
 }
 
 export async function findUserByPhone(phone) {
     const res = await pool.query('SELECT * FROM users WHERE phone=$1', [phone]);
-    return res.rows[0];
-}
-
-export async function findUserById(userId) {
-    const res = await pool.query(`SELECT ${USER_SAFE_COLUMNS} FROM users WHERE id=$1`, [userId]);
-    return res.rows[0];
-}
-
-export async function updateUserProfile(userId, updates) {
-    const fields = [];
-    const values = [];
-    let idx = 1;
-
-    if (updates.name !== undefined) {
-        fields.push(`name=$${idx++}`);
-        values.push(updates.name);
-    }
-    if (updates.email !== undefined) {
-        fields.push(`email=$${idx++}`);
-        values.push(updates.email);
-    }
-    if (updates.profilePhoto !== undefined) {
-        fields.push(`profile_photo=$${idx++}`);
-        values.push(updates.profilePhoto);
-    }
-    if (updates.gender !== undefined) {
-        fields.push(`gender=$${idx++}`);
-        values.push(updates.gender);
-    }
-
-    if (!fields.length) return null;
-
-    values.push(userId);
-    const sql = `UPDATE users SET ${fields.join(', ')} WHERE id=$${idx} RETURNING ${USER_SAFE_COLUMNS}`;
-    const res = await pool.query(sql, values);
     return res.rows[0];
 }
 

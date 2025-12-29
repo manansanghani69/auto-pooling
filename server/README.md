@@ -99,9 +99,12 @@ Base path: `/v1/auth`
 - `POST /login` - Login or sign up with phone + otp (name required for new users)
 - `POST /refresh` - Refresh access token with a refresh token
 - `POST /logout` - Revoke a refresh token
-- `PATCH /profile` - Update user details (name, email, profilePhoto, gender)
-- `GET /profile` - Protected route; requires Bearer access token
 - `DELETE /delete/user` - Protected route; deletes user by `userId`
+
+Base path: `/v1/profile`
+
+- `GET /` - Protected route; requires Bearer access token
+- `PATCH /` - Update user details (name, email, profilePhoto, gender)
 
 Health check: `GET /health`
 
@@ -146,13 +149,13 @@ Access protected route:
 
 ```bash
 curl -H "Authorization: Bearer <accessToken>" \
-  http://localhost:4000/v1/auth/profile
+  http://localhost:4000/v1/profile
 ```
 
 Update profile:
 
 ```bash
-curl -X PATCH http://localhost:4000/v1/auth/profile \
+curl -X PATCH http://localhost:4000/v1/profile \
   -H "Authorization: Bearer <accessToken>" \
   -H "Content-Type: application/json" \
   -d '{"name":"Manan Sanghani","email":"manan@example.com","profilePhoto":"https://example.com/me.jpg","gender":"male"}'
