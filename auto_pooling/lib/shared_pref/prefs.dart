@@ -24,4 +24,8 @@ class Prefs {
   static Future<void> clear() async {
     await _prefs.clear();
   }
+
+  static Future<void> remove(String key) async {
+    await _prefs.remove(key);
+  }
 }

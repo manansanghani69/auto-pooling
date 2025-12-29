@@ -160,13 +160,13 @@ class SplashLogoGlowRing extends StatelessWidget {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              context.currentTheme.primary.withOpacity(0.35),
-              context.currentTheme.secondary.withOpacity(0.35),
+              context.currentTheme.primary.withAlpha(89),
+              context.currentTheme.secondary.withAlpha(89),
             ],
           ),
           boxShadow: [
             BoxShadow(
-              color: context.currentTheme.primary.withOpacity(0.2),
+              color: context.currentTheme.primary.withAlpha(51),
               blurRadius: 24.0,
             ),
           ],
@@ -206,13 +206,13 @@ class SplashLogoSurface extends StatelessWidget {
         borderRadius: BorderRadius.circular(SplashConstants.logoCornerRadius),
         boxShadow: [
           BoxShadow(
-            color: context.currentTheme.primary.withOpacity(0.2),
+            color: context.currentTheme.primary.withAlpha(51),
             blurRadius: 24.0,
             offset: const Offset(0, 12),
           ),
         ],
         border: Border.all(
-          color: Colors.white.withOpacity(0.1),
+          color: Colors.white.withAlpha(26),
         ),
       ),
     );

@@ -7,6 +7,7 @@ class AppColors extends ThemeExtension<AppColors> {
   final Color textNeutralPrimary;
   final Color textNeutralSecondary;
   final Color backgroundPrimary;
+  final Color error;
 
   const AppColors({
     required this.primary,
@@ -14,6 +15,7 @@ class AppColors extends ThemeExtension<AppColors> {
     required this.textNeutralPrimary,
     required this.textNeutralSecondary,
     required this.backgroundPrimary,
+    required this.error,
   });
 
   static const AppColors light = AppColors(
@@ -22,6 +24,7 @@ class AppColors extends ThemeExtension<AppColors> {
     textNeutralPrimary: Color(0xFF111827),
     textNeutralSecondary: Color(0xFF6B7280),
     backgroundPrimary: Color(0xFFF9FAFB),
+    error: Color(0xFFF44336),
   );
 
   @override
@@ -31,6 +34,7 @@ class AppColors extends ThemeExtension<AppColors> {
     Color? textNeutralPrimary,
     Color? textNeutralSecondary,
     Color? backgroundPrimary,
+    Color? error,
   }) {
     return AppColors(
       primary: primary ?? this.primary,
@@ -38,6 +42,7 @@ class AppColors extends ThemeExtension<AppColors> {
       textNeutralPrimary: textNeutralPrimary ?? this.textNeutralPrimary,
       textNeutralSecondary: textNeutralSecondary ?? this.textNeutralSecondary,
       backgroundPrimary: backgroundPrimary ?? this.backgroundPrimary,
+      error: error ?? this.error,
     );
   }
 
@@ -52,13 +57,14 @@ class AppColors extends ThemeExtension<AppColors> {
       secondary: Color.lerp(secondary, other.secondary, t) ?? secondary,
       textNeutralPrimary:
           Color.lerp(textNeutralPrimary, other.textNeutralPrimary, t) ??
-              textNeutralPrimary,
+          textNeutralPrimary,
       textNeutralSecondary:
           Color.lerp(textNeutralSecondary, other.textNeutralSecondary, t) ??
-              textNeutralSecondary,
+          textNeutralSecondary,
       backgroundPrimary:
           Color.lerp(backgroundPrimary, other.backgroundPrimary, t) ??
-              backgroundPrimary,
+          backgroundPrimary,
+      error: Color.lerp(error, other.error, t) ?? error,
     );
   }
 }

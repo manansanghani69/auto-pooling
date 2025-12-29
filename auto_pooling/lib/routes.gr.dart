@@ -15,10 +15,26 @@ abstract class _$AppRouter extends RootStackRouter {
 
   @override
   final Map<String, PageFactory> pagesMap = {
+    AuthOtpRoute.name: (routeData) {
+      final args = routeData.argsAs<AuthOtpRouteArgs>();
+      return AutoRoutePage<dynamic>(
+        routeData: routeData,
+        child: AuthOtpScreen(
+          authBloc: args.authBloc,
+          key: args.key,
+        ),
+      );
+    },
     AuthRoute.name: (routeData) {
       return AutoRoutePage<dynamic>(
         routeData: routeData,
         child: const AuthScreen(),
+      );
+    },
+    HomeRoute.name: (routeData) {
+      return AutoRoutePage<dynamic>(
+        routeData: routeData,
+        child: const HomeScreen(),
       );
     },
     NotificationsRoute.name: (routeData) {
@@ -67,6 +83,44 @@ abstract class _$AppRouter extends RootStackRouter {
 }
 
 /// generated route for
+/// [AuthOtpScreen]
+class AuthOtpRoute extends PageRouteInfo<AuthOtpRouteArgs> {
+  AuthOtpRoute({
+    required AuthBloc authBloc,
+    Key? key,
+    List<PageRouteInfo>? children,
+  }) : super(
+          AuthOtpRoute.name,
+          args: AuthOtpRouteArgs(
+            authBloc: authBloc,
+            key: key,
+          ),
+          initialChildren: children,
+        );
+
+  static const String name = 'AuthOtpRoute';
+
+  static const PageInfo<AuthOtpRouteArgs> page =
+      PageInfo<AuthOtpRouteArgs>(name);
+}
+
+class AuthOtpRouteArgs {
+  const AuthOtpRouteArgs({
+    required this.authBloc,
+    this.key,
+  });
+
+  final AuthBloc authBloc;
+
+  final Key? key;
+
+  @override
+  String toString() {
+    return 'AuthOtpRouteArgs{authBloc: $authBloc, key: $key}';
+  }
+}
+
+/// generated route for
 /// [AuthScreen]
 class AuthRoute extends PageRouteInfo<void> {
   const AuthRoute({List<PageRouteInfo>? children})
@@ -76,6 +130,20 @@ class AuthRoute extends PageRouteInfo<void> {
         );
 
   static const String name = 'AuthRoute';
+
+  static const PageInfo<void> page = PageInfo<void>(name);
+}
+
+/// generated route for
+/// [HomeScreen]
+class HomeRoute extends PageRouteInfo<void> {
+  const HomeRoute({List<PageRouteInfo>? children})
+      : super(
+          HomeRoute.name,
+          initialChildren: children,
+        );
+
+  static const String name = 'HomeRoute';
 
   static const PageInfo<void> page = PageInfo<void>(name);
 }

@@ -1,3 +1,4 @@
+import 'package:auto_pooling/widgets/primary_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -439,7 +440,7 @@ class OnboardingHeroImageOverlay extends StatelessWidget {
             begin: Alignment.bottomCenter,
             end: Alignment.topCenter,
             colors: [
-              context.currentTheme.backgroundPrimary.withOpacity(0.2),
+              context.currentTheme.backgroundPrimary.withAlpha(51),
               Colors.transparent,
             ],
           ),
@@ -492,11 +493,11 @@ class OnboardingHeroBadge extends StatelessWidget {
           OnboardingConstants.heroBadgeRadius,
         ),
         border: Border.all(
-          color: context.currentTheme.textNeutralSecondary.withOpacity(0.12),
+          color: context.currentTheme.textNeutralSecondary.withAlpha(31),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withAlpha(20),
             blurRadius: 16.0,
             offset: const Offset(0, 8),
           ),
@@ -526,7 +527,7 @@ class OnboardingBadgeIconBox extends StatelessWidget {
   Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: context.currentTheme.secondary.withOpacity(0.12),
+        color: context.currentTheme.secondary.withAlpha(31),
         borderRadius: BorderRadius.circular(
           OnboardingConstants.heroBadgeIconRadius,
         ),
@@ -698,7 +699,11 @@ class OnboardingFooter extends StatelessWidget {
         children: [
           const OnboardingIndicatorRow(),
           const SizedBox(height: OnboardingConstants.footerContentSpacing),
-          OnboardingContinueButton(onPressed: onContinue),
+          PrimaryButton(
+            onPressed: onContinue,
+            icon: Icons.arrow_forward,
+            buttonText: context.localization.onboardingContinue,
+          ),
         ],
       ),
     );
@@ -739,7 +744,7 @@ class OnboardingPageIndicator extends StatelessWidget {
         : OnboardingConstants.indicatorInactiveSize;
     final Color color = isActive
         ? context.currentTheme.primary
-        : context.currentTheme.textNeutralSecondary.withOpacity(0.25);
+        : context.currentTheme.textNeutralSecondary.withAlpha(64);
 
     return AnimatedContainer(
       duration: OnboardingConstants.indicatorAnimationDuration,
@@ -751,79 +756,6 @@ class OnboardingPageIndicator extends StatelessWidget {
           OnboardingConstants.indicatorHeight,
         ),
       ),
-    );
-  }
-}
-
-class OnboardingContinueButton extends StatelessWidget {
-  final VoidCallback onPressed;
-
-  const OnboardingContinueButton({required this.onPressed, super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      height: OnboardingConstants.buttonHeight,
-      child: ElevatedButton(
-        onPressed: onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: context.currentTheme.primary,
-          foregroundColor: Colors.white,
-          elevation: 4.0,
-          shadowColor: context.currentTheme.primary.withOpacity(0.3),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(
-              OnboardingConstants.buttonRadius,
-            ),
-          ),
-        ),
-        child: const OnboardingContinueButtonContent(),
-      ),
-    );
-  }
-}
-
-class OnboardingContinueButtonContent extends StatelessWidget {
-  const OnboardingContinueButtonContent({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        const OnboardingContinueButtonLabel(),
-        const SizedBox(width: OnboardingConstants.buttonIconSpacing),
-        const OnboardingContinueButtonIcon(),
-      ],
-    );
-  }
-}
-
-class OnboardingContinueButtonLabel extends StatelessWidget {
-  const OnboardingContinueButtonLabel({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      context.localization.onboardingContinue,
-      style: AppTextStyles.p2Regular.copyWith(
-        color: Colors.white,
-        fontWeight: FontWeight.w600,
-      ),
-    );
-  }
-}
-
-class OnboardingContinueButtonIcon extends StatelessWidget {
-  const OnboardingContinueButtonIcon({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Icon(
-      Icons.arrow_forward,
-      size: OnboardingConstants.buttonIconSize,
-      color: Colors.white,
     );
   }
 }
