@@ -34,7 +34,6 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         _requestOtpEndpoint,
         data: {'phone': phoneNumber},
       );
-      _ensureSuccess(response);
       final data = _extractData(response);
       return OtpRequestModel.fromJson(data);
     } on DioException catch (error) {
@@ -60,7 +59,6 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
           'role': role,
         },
       );
-      _ensureSuccess(response);
       final data = _extractData(response);
       return VerifyOtpModel.fromJson(data);
     } on DioException catch (error) {
@@ -79,7 +77,6 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         requiresAuth: true,
         data: {'refreshToken': refreshToken},
       );
-      _ensureSuccess(response);
       final data = _extractData(response);
       return LogoutModel.fromJson(data);
     } on DioException catch (error) {
@@ -88,16 +85,6 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         statusCode: error.response?.statusCode ?? 500,
       );
     }
-  }
-
-  void _ensureSuccess(Response response) {
-    if (response.statusCode == 200) {
-      return;
-    }
-    throw APIException(
-      message: _extractErrorMessage(response),
-      statusCode: response.statusCode ?? 500,
-    );
   }
 
   Map<String, dynamic> _extractData(Response response) {

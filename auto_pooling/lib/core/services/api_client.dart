@@ -2,6 +2,8 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 
+import '../errors/api_exception.dart';
+
 class ApiClient {
   final Dio _dio;
 
@@ -46,8 +48,8 @@ class ApiClient {
     Map<String, dynamic>? queryParameters,
     Map<String, dynamic>? headers,
     bool requiresAuth = false,
-  }) {
-    return _dio.request<T>(
+  }) async {
+    final response = await _dio.request<T>(
       path,
       data: data,
       queryParameters: queryParameters,
@@ -59,6 +61,83 @@ class ApiClient {
         },
       ),
     );
+    _validateResponse(response);
+    return response;
+  }
+
+  void _validateResponse(Response response) {
+    final Map<String, dynamic> payload = _normalizePayload(response);
+    final int statusCode = response.statusCode ?? 500;
+    final bool httpSuccess = statusCode >= 200 && statusCode < 300;
+    final String status =
+        payload['status']?.toString().toLowerCase() ?? '';
+    final bool statusSuccess = status == 'success' || status == 'ok';
+    final int? bodyCode = _toInt(payload['code']);
+    final bool codeSuccess =
+        bodyCode == null || (bodyCode >= 200 && bodyCode < 300);
+
+    if (httpSuccess && statusSuccess && codeSuccess) {
+      return;
+    }
+
+    throw APIException(
+      message: _extractErrorMessage(payload, response),
+      statusCode: bodyCode ?? statusCode,
+    );
+  }
+
+  Map<String, dynamic> _normalizePayload(Response response) {
+    final Object? data = response.data;
+    if (data is Map) {
+      try {
+        final payload = Map<String, dynamic>.from(data);
+        (response as Response<dynamic>).data = payload;
+        return payload;
+      } catch (_) {
+        return {'message': data.toString()};
+      }
+    }
+    if (data is String) {
+      try {
+        final decoded = jsonDecode(data);
+        if (decoded is Map<String, dynamic>) {
+          (response as Response<dynamic>).data = decoded;
+          return decoded;
+        }
+        return {'message': data};
+      } catch (_) {
+        return {'message': data};
+      }
+    }
+    if (data == null) {
+      return <String, dynamic>{};
+    }
+    return {'message': data.toString()};
+  }
+
+  String _extractErrorMessage(
+    Map<String, dynamic> payload,
+    Response response,
+  ) {
+    final Object? message =
+        payload['message'] ?? payload['error'] ?? payload['status'];
+    if (message != null && message.toString().isNotEmpty) {
+      return message.toString();
+    }
+    return response.statusMessage ?? 'Request failed';
+  }
+
+  int? _toInt(Object? value) {
+    if (value is int) {
+      return value;
+    }
+    if (value is num) {
+      return value.toInt();
+    }
+    if (value is String) {
+      return int.tryParse(value);
+    }
+    return null;
   }
 }
 
