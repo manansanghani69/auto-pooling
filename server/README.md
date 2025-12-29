@@ -59,10 +59,22 @@ CREATE TABLE users (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   phone VARCHAR(15) UNIQUE,
   name TEXT,
+  email TEXT,
+  profile_photo TEXT,
+  gender TEXT,
   password TEXT,
   role VARCHAR CHECK (role IN ('rider','driver','admin')) DEFAULT 'rider',
   created_at TIMESTAMP DEFAULT NOW()
 );
+```
+
+If the table already exists, add the new columns:
+
+```sql
+ALTER TABLE users
+  ADD COLUMN IF NOT EXISTS email TEXT,
+  ADD COLUMN IF NOT EXISTS profile_photo TEXT,
+  ADD COLUMN IF NOT EXISTS gender TEXT;
 ```
 
 4) Install dependencies
@@ -87,6 +99,7 @@ Base path: `/v1/auth`
 - `POST /login` - Login or sign up with phone + otp (name required for new users)
 - `POST /refresh` - Refresh access token with a refresh token
 - `POST /logout` - Revoke a refresh token
+- `PATCH /profile` - Update user details (name, email, profilePhoto, gender)
 - `GET /profile` - Protected route; requires Bearer access token
 - `DELETE /delete/user` - Protected route; deletes user by `userId`
 
@@ -134,6 +147,15 @@ Access protected route:
 ```bash
 curl -H "Authorization: Bearer <accessToken>" \
   http://localhost:4000/v1/auth/profile
+```
+
+Update profile:
+
+```bash
+curl -X PATCH http://localhost:4000/v1/auth/profile \
+  -H "Authorization: Bearer <accessToken>" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Manan Sanghani","email":"manan@example.com","profilePhoto":"https://example.com/me.jpg","gender":"male"}'
 ```
 
 Logout:

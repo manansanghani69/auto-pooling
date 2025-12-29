@@ -9,6 +9,7 @@ router.post('/verify-otp', ctrl.verifyOtp);
 router.post('/refresh', ctrl.refresh);
 router.post('/logout', ctrl.logout);
 router.delete('/delete/user', requireAuth, ctrl.deleteAccount);
+router.patch('/profile', requireAuth, ctrl.updateProfile);
 // Only to test auth tokens
 router.get('/profile', requireAuth, ctrl.profile);
 
