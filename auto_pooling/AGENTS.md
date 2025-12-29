@@ -271,6 +271,10 @@ if (response.statusCode != 200) {
 }
 ```
 
+## Model serialization (required)
+- All models in `lib/**/data/models/` must use `json_serializable`.
+- Include `@JsonSerializable`, `fromJson`/`toJson`, and `part '*.g.dart'`; do not hand-roll JSON parsing in models.
+
 ## API caching (optional)
 Caching is opt-in. Only use it when asked.
 `CacheManager` lives in `lib/utils/cache_manager.dart` and is attached to `Dio`.

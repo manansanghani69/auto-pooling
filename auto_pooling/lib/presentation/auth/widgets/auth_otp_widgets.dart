@@ -10,6 +10,7 @@ import '../../../widgets/primary_button.dart';
 import '../../../widgets/styling/app_colors.dart';
 import '../bloc/auth_bloc.dart';
 import '../constants/auth_constants.dart';
+import '../bloc/auth_state.dart';
 import 'auth_shared_widgets.dart';
 
 class AuthOtpHeader extends StatelessWidget {
@@ -199,46 +200,63 @@ class _AuthOtpInputFieldsState extends State<AuthOtpInputFields> {
   void _handleDigitChanged(int index, String value) {
     if (value.isNotEmpty && index < _otpLength - 1) {
       _focusNodes[index + 1].requestFocus();
+      _notifyOtpChanged();
       return;
     }
     if (value.isEmpty && index > 0) {
       _focusNodes[index - 1].requestFocus();
     }
+    _notifyOtpChanged();
+  }
+
+  void _notifyOtpChanged() {
+    final String otp = _controllers.map((controller) => controller.text).join();
+    context.read<AuthBloc>().add(AuthOtpChangedEvent(otp: otp));
   }
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        AuthOtpDigitField(
-          controller: _controllers[0],
-          focusNode: _focusNodes[0],
-          textInputAction: TextInputAction.next,
-          onChanged: (value) => _handleDigitChanged(0, value),
-        ),
-        const SizedBox(width: AuthConstants.otpDigitSpacing),
-        AuthOtpDigitField(
-          controller: _controllers[1],
-          focusNode: _focusNodes[1],
-          textInputAction: TextInputAction.next,
-          onChanged: (value) => _handleDigitChanged(1, value),
-        ),
-        const SizedBox(width: AuthConstants.otpDigitSpacing),
-        AuthOtpDigitField(
-          controller: _controllers[2],
-          focusNode: _focusNodes[2],
-          textInputAction: TextInputAction.next,
-          onChanged: (value) => _handleDigitChanged(2, value),
-        ),
-        const SizedBox(width: AuthConstants.otpDigitSpacing),
-        AuthOtpDigitField(
-          controller: _controllers[3],
-          focusNode: _focusNodes[3],
-          textInputAction: TextInputAction.done,
-          onChanged: (value) => _handleDigitChanged(3, value),
-        ),
-      ],
+    return BlocListener<AuthBloc, AuthState>(
+      listenWhen: (previous, current) =>
+          previous.otp.isNotEmpty && current.otp.isEmpty,
+      listener: (context, state) {
+        for (final controller in _controllers) {
+          controller.clear();
+        }
+        _focusNodes.first.requestFocus();
+      },
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          AuthOtpDigitField(
+            controller: _controllers[0],
+            focusNode: _focusNodes[0],
+            textInputAction: TextInputAction.next,
+            onChanged: (value) => _handleDigitChanged(0, value),
+          ),
+          const SizedBox(width: AuthConstants.otpDigitSpacing),
+          AuthOtpDigitField(
+            controller: _controllers[1],
+            focusNode: _focusNodes[1],
+            textInputAction: TextInputAction.next,
+            onChanged: (value) => _handleDigitChanged(1, value),
+          ),
+          const SizedBox(width: AuthConstants.otpDigitSpacing),
+          AuthOtpDigitField(
+            controller: _controllers[2],
+            focusNode: _focusNodes[2],
+            textInputAction: TextInputAction.next,
+            onChanged: (value) => _handleDigitChanged(2, value),
+          ),
+          const SizedBox(width: AuthConstants.otpDigitSpacing),
+          AuthOtpDigitField(
+            controller: _controllers[3],
+            focusNode: _focusNodes[3],
+            textInputAction: TextInputAction.done,
+            onChanged: (value) => _handleDigitChanged(3, value),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -347,7 +365,7 @@ class AuthOtpTimerChip extends StatelessWidget {
         child: secondsRemaining == 0
             ? AuthOtpResendAction(
                 onPressed: () => context.read<AuthBloc>().add(
-                  const AuthOtpTimerStartedEvent(),
+                  const AuthRequestOtpEvent(),
                 ),
               )
             : RichText(
@@ -403,8 +421,16 @@ class AuthOtpVerifyButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AuthState state = context.select<AuthBloc, AuthState>(
+      (bloc) => bloc.state,
+    );
+    final bool isVerifying = state.status == AuthStatus.verifyingOtp;
+    final bool isOtpComplete = state.otp.length == 4;
+
     return PrimaryButton(
-      onPressed: () {},
+      onPressed: isVerifying || !isOtpComplete
+          ? null
+          : () => context.read<AuthBloc>().add(const AuthVerifyOtpEvent()),
       buttonText: context.localization.authOtpVerifyButton,
       icon: Icons.check_circle,
       height: AuthConstants.primaryButtonHeight,
