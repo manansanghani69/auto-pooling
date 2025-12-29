@@ -1,5 +1,6 @@
 // src/auth/service.js
 import bcrypt from 'bcrypt';
+import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import { pool } from '../common/db.js';
 import { redisClient } from '../common/redis.js';
@@ -11,9 +12,39 @@ const SALT_ROUNDS = 10;
 const JWT_SECRET = process.env.JWT_SECRET;
 const ACCESS_EXPIRES = process.env.JWT_EXPIRES_IN || '15m';
 const REFRESH_DAYS = Number(process.env.REFRESH_TOKEN_EXPIRES_DAYS || 30);
+const OTP_TTL_SECONDS = Number(process.env.OTP_TTL_SECONDS || 300);
+const OTP_DIGITS = Number(process.env.OTP_DIGITS || 4);
+const RETURN_OTP = process.env.OTP_RETURN_IN_RESPONSE === 'true' || process.env.NODE_ENV !== 'production';
 
-export async function createUser({ phone, name, password, role = 'rider' }) {
-    const hashed = await bcrypt.hash(password, SALT_ROUNDS);
+function resolveOtpTtlSeconds() {
+    return Number.isFinite(OTP_TTL_SECONDS) && OTP_TTL_SECONDS > 0 ? OTP_TTL_SECONDS : 300;
+}
+
+function resolveOtpDigits() {
+    return Number.isInteger(OTP_DIGITS) && OTP_DIGITS > 0 && OTP_DIGITS <= 10 ? OTP_DIGITS : 6;
+}
+
+function generateOtp() {
+    const digits = resolveOtpDigits();
+    const max = 10 ** digits;
+    return String(crypto.randomInt(0, max)).padStart(digits, '0');
+}
+
+function otpKey(phone) {
+    return `otp:${phone}`;
+}
+
+export function shouldReturnOtp() {
+    return RETURN_OTP;
+}
+
+async function hashPlaceholderPassword() {
+    // Keep legacy password column populated even though OTP is used.
+    return bcrypt.hash(uuidv4(), SALT_ROUNDS);
+}
+
+export async function createUser({ phone, name, role = 'rider' }) {
+    const hashed = await hashPlaceholderPassword();
     const sql = `INSERT INTO users (phone, name, password, role) VALUES ($1,$2,$3,$4) RETURNING id, phone, name, role, created_at`;
     const res = await pool.query(sql, [phone, name, hashed, role]);
     return res.rows[0];
@@ -24,8 +55,24 @@ export async function findUserByPhone(phone) {
     return res.rows[0];
 }
 
-export async function verifyPassword(plain, hashed) {
-    return bcrypt.compare(plain, hashed);
+export async function requestOtp(phone) {
+    const otp = generateOtp();
+    const ttlSeconds = resolveOtpTtlSeconds();
+    await redisClient.set(otpKey(phone), otp, { EX: ttlSeconds });
+    return { otp, expiresIn: ttlSeconds };
+}
+
+export async function verifyOtp(phone, otp) {
+    const key = otpKey(phone);
+    const stored = await redisClient.get(key);
+    if (!stored) return false;
+    const storedBuf = Buffer.from(stored);
+    const otpBuf = Buffer.from(otp);
+    if (storedBuf.length !== otpBuf.length) return false;
+    const matches = crypto.timingSafeEqual(storedBuf, otpBuf);
+    if (!matches) return false;
+    await redisClient.del(key);
+    return true;
 }
 
 function signAccessToken(payload) {
