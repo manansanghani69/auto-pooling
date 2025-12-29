@@ -37,6 +37,7 @@ class AuthOtpScreen extends StatelessWidget {
         },
         child: const Scaffold(
           body: AuthOtpBody(),
+          bottomNavigationBar: AuthOtpVerifyButton(),
         ),
       ),
     );
@@ -64,8 +65,6 @@ class AuthOtpBody extends StatelessWidget {
             AuthOtpInputSection(),
             SizedBox(height: AuthConstants.sectionSpacing),
             AuthOtpTimerSection(),
-            SizedBox(height: AuthConstants.sectionSpacing),
-            AuthOtpVerifyButton(),
             SizedBox(height: AuthConstants.bottomSpacing),
           ],
         ),

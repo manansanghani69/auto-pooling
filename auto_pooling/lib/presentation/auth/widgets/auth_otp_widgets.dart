@@ -3,6 +3,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pinput/pinput.dart';
 
 import '../../../common/theme/text_style/app_text_styles.dart';
 import '../../../i18n/localization.dart';
@@ -173,150 +174,183 @@ class AuthOtpInputFields extends StatefulWidget {
 class _AuthOtpInputFieldsState extends State<AuthOtpInputFields> {
   static const int _otpLength = 4;
 
-  late final List<TextEditingController> _controllers;
-  late final List<FocusNode> _focusNodes;
+  late final TextEditingController _controller;
+  late final FocusNode _focusNode;
+  String _lastSubmittedOtp = '';
 
   @override
   void initState() {
     super.initState();
-    _controllers = List<TextEditingController>.generate(
-      _otpLength,
-      (_) => TextEditingController(),
-    );
-    _focusNodes = List<FocusNode>.generate(_otpLength, (_) => FocusNode());
+    _controller = TextEditingController();
+    _focusNode = FocusNode();
   }
 
   @override
   void dispose() {
-    for (final controller in _controllers) {
-      controller.dispose();
-    }
-    for (final focusNode in _focusNodes) {
-      focusNode.dispose();
-    }
+    _controller.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
-  void _handleDigitChanged(int index, String value) {
-    if (value.isNotEmpty && index < _otpLength - 1) {
-      _focusNodes[index + 1].requestFocus();
-      _notifyOtpChanged();
+  void _handleOtpChanged(String value) {
+    context.read<AuthBloc>().add(AuthOtpChangedEvent(otp: value));
+    if (value.length != _otpLength) {
+      _lastSubmittedOtp = '';
       return;
     }
-    if (value.isEmpty && index > 0) {
-      _focusNodes[index - 1].requestFocus();
-    }
-    _notifyOtpChanged();
+    _tryAutoVerify(value);
   }
 
-  void _notifyOtpChanged() {
-    final String otp = _controllers.map((controller) => controller.text).join();
-    context.read<AuthBloc>().add(AuthOtpChangedEvent(otp: otp));
+  void _tryAutoVerify(String value) {
+    final AuthBloc bloc = context.read<AuthBloc>();
+    final AuthState state = bloc.state;
+    if (state.status == AuthStatus.verifyingOtp ||
+        state.status == AuthStatus.otpVerified) {
+      return;
+    }
+    if (value == _lastSubmittedOtp) {
+      return;
+    }
+    _lastSubmittedOtp = value;
+    bloc.add(const AuthVerifyOtpEvent());
+  }
+
+  void _handleStateChange(AuthState state) {
+    if (state.otp.isEmpty && _controller.text.isNotEmpty) {
+      _controller.clear();
+      _focusNode.requestFocus();
+      _lastSubmittedOtp = '';
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final bool hasError = context.select<AuthBloc, bool>((bloc) {
+      final AuthState state = bloc.state;
+      return state.status == AuthStatus.failure &&
+          state.lastAction == AuthAction.verifyOtp &&
+          state.errorMessage.isNotEmpty;
+    });
+    final bool isVerifying = context.select<AuthBloc, bool>(
+      (bloc) => bloc.state.status == AuthStatus.verifyingOtp,
+    );
+
     return BlocListener<AuthBloc, AuthState>(
       listenWhen: (previous, current) =>
-          previous.otp.isNotEmpty && current.otp.isEmpty,
-      listener: (context, state) {
-        for (final controller in _controllers) {
-          controller.clear();
-        }
-        _focusNodes.first.requestFocus();
-      },
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          AuthOtpDigitField(
-            controller: _controllers[0],
-            focusNode: _focusNodes[0],
-            textInputAction: TextInputAction.next,
-            onChanged: (value) => _handleDigitChanged(0, value),
-          ),
-          const SizedBox(width: AuthConstants.otpDigitSpacing),
-          AuthOtpDigitField(
-            controller: _controllers[1],
-            focusNode: _focusNodes[1],
-            textInputAction: TextInputAction.next,
-            onChanged: (value) => _handleDigitChanged(1, value),
-          ),
-          const SizedBox(width: AuthConstants.otpDigitSpacing),
-          AuthOtpDigitField(
-            controller: _controllers[2],
-            focusNode: _focusNodes[2],
-            textInputAction: TextInputAction.next,
-            onChanged: (value) => _handleDigitChanged(2, value),
-          ),
-          const SizedBox(width: AuthConstants.otpDigitSpacing),
-          AuthOtpDigitField(
-            controller: _controllers[3],
-            focusNode: _focusNodes[3],
-            textInputAction: TextInputAction.done,
-            onChanged: (value) => _handleDigitChanged(3, value),
-          ),
-        ],
+          previous.otp != current.otp || previous.status != current.status,
+      listener: (context, state) => _handleStateChange(state),
+      child: AuthOtpPinputField(
+        length: _otpLength,
+        controller: _controller,
+        focusNode: _focusNode,
+        hasError: hasError,
+        isDisabled: isVerifying,
+        onChanged: _handleOtpChanged,
       ),
     );
   }
 }
 
-class AuthOtpDigitField extends StatelessWidget {
+class AuthOtpPinputField extends StatelessWidget {
+  final int length;
   final TextEditingController controller;
   final FocusNode focusNode;
-  final TextInputAction textInputAction;
   final ValueChanged<String> onChanged;
+  final bool hasError;
+  final bool isDisabled;
 
-  const AuthOtpDigitField({
+  const AuthOtpPinputField({
+    required this.length,
     required this.controller,
     required this.focusNode,
-    required this.textInputAction,
     required this.onChanged,
+    required this.hasError,
+    required this.isDisabled,
     super.key,
   });
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
+    final Color neutralBorder = context.currentTheme.textNeutralSecondary
+        .withAlpha(51);
+    final Color activeColor = hasError
+        ? context.currentTheme.error
+        : context.currentTheme.primary;
+
+    final PinTheme defaultPinTheme = _buildPinTheme(
+      context,
+      borderColor: neutralBorder,
+      glowColor: null,
+    );
+    final PinTheme focusedPinTheme = _buildPinTheme(
+      context,
+      borderColor: activeColor,
+      glowColor: activeColor,
+    );
+    final PinTheme errorPinTheme = _buildPinTheme(
+      context,
+      borderColor: context.currentTheme.error,
+      glowColor: context.currentTheme.error,
+    );
+
+    return Pinput(
+      length: length,
+      controller: controller,
+      focusNode: focusNode,
+      autofocus: true,
+      enabled: !isDisabled,
+      mainAxisAlignment: MainAxisAlignment.center,
+      defaultPinTheme: defaultPinTheme,
+      focusedPinTheme: focusedPinTheme,
+      errorPinTheme: errorPinTheme,
+      submittedPinTheme: defaultPinTheme,
+      followingPinTheme: defaultPinTheme,
+      forceErrorState: hasError,
+      separatorBuilder: _buildOtpSeparator,
+      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+      keyboardType: TextInputType.number,
+      onChanged: onChanged,
+    );
+  }
+
+  PinTheme _buildPinTheme(
+    BuildContext context, {
+    required Color borderColor,
+    required Color? glowColor,
+  }) {
+    return PinTheme(
       width: AuthConstants.otpDigitSize,
       height: AuthConstants.otpDigitSize,
-      child: TextField(
-        controller: controller,
-        focusNode: focusNode,
-        textInputAction: textInputAction,
-        onChanged: onChanged,
-        keyboardType: TextInputType.number,
-        textAlign: TextAlign.center,
-        style: AppTextStyles.h2SemiBold.copyWith(
-          fontSize: 16,
-          color: context.currentTheme.textNeutralPrimary,
-        ),
-        inputFormatters: [
-          FilteringTextInputFormatter.digitsOnly,
-          LengthLimitingTextInputFormatter(1),
-        ],
-        decoration: InputDecoration(
-          counterText: '',
-          filled: true,
-          fillColor: Theme.of(context).colorScheme.surface,
-          contentPadding: EdgeInsets.zero,
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(AuthConstants.otpDigitRadius),
-            borderSide: BorderSide(
-              width: 2,
-              color: context.currentTheme.textNeutralSecondary.withAlpha(51),
-            ),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(AuthConstants.otpDigitRadius),
-            borderSide: BorderSide(
-              color: context.currentTheme.primary,
-              width: 2,
-            ),
-          ),
-        ),
+      textStyle: AppTextStyles.h2SemiBold.copyWith(
+        fontSize: 24,
+        color: context.currentTheme.textNeutralPrimary,
+      ),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(AuthConstants.otpDigitRadius),
+        border: Border.all(color: borderColor, width: 2),
+        boxShadow: glowColor == null
+            ? const []
+            : [
+                BoxShadow(
+                  color: glowColor.withAlpha(60),
+                  blurRadius: 12,
+                  spreadRadius: 1,
+                ),
+              ],
       ),
     );
+  }
+}
+
+Widget _buildOtpSeparator(int index) => const AuthOtpDigitSeparator();
+
+class AuthOtpDigitSeparator extends StatelessWidget {
+  const AuthOtpDigitSeparator({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const SizedBox(width: AuthConstants.otpDigitSpacing);
   }
 }
 
@@ -364,9 +398,8 @@ class AuthOtpTimerChip extends StatelessWidget {
         ),
         child: secondsRemaining == 0
             ? AuthOtpResendAction(
-                onPressed: () => context.read<AuthBloc>().add(
-                  const AuthRequestOtpEvent(),
-                ),
+                onPressed: () =>
+                    context.read<AuthBloc>().add(const AuthRequestOtpEvent()),
               )
             : RichText(
                 text: TextSpan(
@@ -427,18 +460,23 @@ class AuthOtpVerifyButton extends StatelessWidget {
     final bool isVerifying = state.status == AuthStatus.verifyingOtp;
     final bool isOtpComplete = state.otp.length == 4;
 
-    return PrimaryButton(
-      onPressed: isVerifying || !isOtpComplete
-          ? null
-          : () => context.read<AuthBloc>().add(const AuthVerifyOtpEvent()),
-      buttonText: context.localization.authOtpVerifyButton,
-      icon: Icons.check_circle,
-      height: AuthConstants.primaryButtonHeight,
-      borderRadius: AuthConstants.primaryButtonRadius,
-      elevation: 0,
-      textStyle: AppTextStyles.p2Regular.copyWith(
-        fontWeight: FontWeight.w600,
-        fontSize: 18,
+    return SafeArea(
+      child: Padding(
+        padding: EdgeInsetsGeometry.symmetric(horizontal: 24),
+        child: PrimaryButton(
+          onPressed: isVerifying || !isOtpComplete
+              ? null
+              : () => context.read<AuthBloc>().add(const AuthVerifyOtpEvent()),
+          buttonText: context.localization.authOtpVerifyButton,
+          icon: Icons.check_circle,
+          height: AuthConstants.primaryButtonHeight,
+          borderRadius: AuthConstants.primaryButtonRadius,
+          elevation: 0,
+          textStyle: AppTextStyles.p2Regular.copyWith(
+            fontWeight: FontWeight.w600,
+            fontSize: 18,
+          ),
+        ),
       ),
     );
   }
