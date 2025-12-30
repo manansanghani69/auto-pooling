@@ -52,13 +52,13 @@ export async function updateProfile(req, res) {
 
         const name = toOptionalTrimmedString(body.name);
         const email = toOptionalTrimmedString(body.email);
-        const profilePhoto = toOptionalTrimmedString(body.profilePhoto ?? body.profile_photo);
+        // const profilePhoto = toOptionalTrimmedString(body.profilePhoto ?? body.profile_photo);
         const gender = toOptionalTrimmedString(body.gender);
 
         const updates = {};
         if (name !== undefined) updates.name = name;
         if (email !== undefined) updates.email = email;
-        if (profilePhoto !== undefined) updates.profilePhoto = profilePhoto;
+        // if (profilePhoto !== undefined) updates.profilePhoto = profilePhoto;
         if (gender !== undefined) updates.gender = gender;
 
         if (!Object.keys(updates).length) {
