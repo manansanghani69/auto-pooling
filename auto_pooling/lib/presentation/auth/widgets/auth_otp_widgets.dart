@@ -7,12 +7,12 @@ import 'package:pinput/pinput.dart';
 
 import '../../../common/theme/text_style/app_text_styles.dart';
 import '../../../i18n/localization.dart';
+import '../../../widgets/app_back_button.dart';
 import '../../../widgets/primary_button.dart';
 import '../../../widgets/styling/app_colors.dart';
 import '../bloc/auth_bloc.dart';
 import '../constants/auth_constants.dart';
 import '../bloc/auth_state.dart';
-import 'auth_shared_widgets.dart';
 
 class AuthOtpHeader extends StatelessWidget {
   const AuthOtpHeader({super.key});
@@ -21,7 +21,7 @@ class AuthOtpHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return const Align(
       alignment: Alignment.centerLeft,
-      child: AuthBackButton(),
+      child: AppBackButton(),
     );
   }
 }
@@ -470,8 +470,6 @@ class AuthOtpVerifyButton extends StatelessWidget {
           buttonText: context.localization.authOtpVerifyButton,
           icon: Icons.check_circle,
           height: AuthConstants.primaryButtonHeight,
-          borderRadius: AuthConstants.primaryButtonRadius,
-          elevation: 0,
           textStyle: AppTextStyles.p2Regular.copyWith(
             fontWeight: FontWeight.w600,
             fontSize: 18,

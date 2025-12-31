@@ -4,11 +4,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../core/services/injection_container.dart';
 import '../../routes.dart';
+import '../../widgets/app_snack_bar_message.dart';
 import 'bloc/auth_bloc.dart';
 import 'bloc/auth_state.dart';
 import 'constants/auth_constants.dart';
 import 'widgets/auth_phone_widgets.dart';
-import 'widgets/auth_shared_widgets.dart';
 import '../../widgets/styling/app_colors.dart';
 
 @RoutePage()
@@ -82,7 +82,7 @@ void _showAuthSnackBar(BuildContext context, String message) {
   }
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
-      content: AuthSnackBarMessage(message: message),
+      content: AppSnackBarMessage(message: message),
       backgroundColor: context.currentTheme.error,
     ),
   );

@@ -92,6 +92,60 @@ class AppLocalizations {
 
   String get profileSubtitle => 'View and update rider details.';
 
+  String get profileCompleteAppBarTitle => 'Complete Profile';
+
+  String get profileEditAppBarTitle => 'Edit Profile';
+
+  String get profileCompleteHeadline => 'Welcome to Rider';
+
+  String get profileEditHeadline => 'Update your details';
+
+  String get profileCompleteSubtitle =>
+      'Let\'s get to know you better to start your first ride.';
+
+  String get profileEditSubtitle =>
+      'Make changes to your profile information.';
+
+  String get profileUploadPhoto => 'Upload Profile Picture';
+
+  String get profileFullNameLabel => 'Full Name';
+
+  String get profileFullNameHint => 'e.g. Rahul Verma';
+
+  String get profileEmailLabel => 'Email Address';
+
+  String get profileEmailHint => 'name@example.com';
+
+  String get profileGenderLabel => 'Gender';
+
+  String get profileOptionalLabel => 'Optional';
+
+  String get profileGenderMale => 'Male';
+
+  String get profileGenderFemale => 'Female';
+
+  String get profileGenderOther => 'Other';
+
+  String get profileContinueButton => 'Continue';
+
+  String get profileSaveButton => 'Save Changes';
+
+  String get profileTermsPrefix => 'By continuing, you agree to our ';
+
+  String get profileTermsOfService => 'Terms of Service';
+
+  String get profileTermsAnd => ' & ';
+
+  String get profileTermsPrivacy => 'Privacy Policy';
+
+  String get profileNameRequiredError => 'Enter your full name';
+
+  String get profileEmailInvalidError => 'Enter a valid email address';
+
+  String get profilePhotoCamera => 'Take Photo';
+
+  String get profilePhotoGallery => 'Choose from Gallery';
+
   String get rideRequestTitle => 'Ride Request';
 
   String get rideRequestSubtitle =>

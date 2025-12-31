@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../routes.dart';
+import '../../widgets/app_snack_bar_message.dart';
 import 'bloc/auth_bloc.dart';
 import 'bloc/auth_state.dart';
 import 'constants/auth_constants.dart';
 import 'widgets/auth_otp_widgets.dart';
-import 'widgets/auth_shared_widgets.dart';
 import '../../widgets/styling/app_colors.dart';
 
 @RoutePage()
@@ -26,7 +26,13 @@ class AuthOtpScreen extends StatelessWidget {
             previous.errorMessage != current.errorMessage,
         listener: (context, state) {
           if (state.status == AuthStatus.otpVerified) {
-            context.router.replaceAll([const HomeRoute()]);
+            final bool needsProfile = state.isNewUser ||
+                state.user?.name.trim().isEmpty == true;
+            if (needsProfile) {
+              context.router.replaceAll([ProfileRoute()]);
+            } else {
+              context.router.replaceAll([const HomeRoute()]);
+            }
             return;
           }
           if (state.status == AuthStatus.failure &&
@@ -79,7 +85,7 @@ void _showAuthSnackBar(BuildContext context, String message) {
   }
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
-      content: AuthSnackBarMessage(message: message),
+      content: AppSnackBarMessage(message: message),
       backgroundColor: context.currentTheme.error,
     ),
   );

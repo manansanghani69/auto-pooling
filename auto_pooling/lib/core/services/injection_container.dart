@@ -8,6 +8,10 @@ import '../../presentation/auth/data/datasources/auth_remote_data_source.dart';
 import '../../presentation/auth/data/repositories/auth_repository_impl.dart';
 import '../../presentation/auth/domain/repositories/auth_repository.dart';
 import '../../presentation/auth/domain/usecases/auth_usecase.dart';
+import '../../presentation/profile/data/datasources/profile_remote_data_source.dart';
+import '../../presentation/profile/data/repositories/profile_repository_impl.dart';
+import '../../presentation/profile/domain/repositories/profile_repository.dart';
+import '../../presentation/profile/domain/usecases/profile_usecase.dart';
 import '../../shared_pref/pref_keys.dart';
 import '../../shared_pref/prefs.dart';
 import '../../utils/app_flavor_env.dart';
@@ -21,6 +25,7 @@ Future<void> configureDependencies({
   await _configureSharedPreferences(sharedPreferences);
   _configureNetwork();
   _configureAuth();
+  _configureProfile();
 }
 
 Future<void> _configureSharedPreferences(
@@ -85,5 +90,28 @@ void _configureAuth() {
   }
   sl.registerLazySingleton<AuthUseCase>(
     () => AuthUseCase(repository: sl()),
+  );
+}
+
+void _configureProfile() {
+  if (sl.isRegistered<ProfileRemoteDataSource>()) {
+    sl.unregister<ProfileRemoteDataSource>();
+  }
+  sl.registerLazySingleton<ProfileRemoteDataSource>(
+    () => ProfileRemoteDataSourceImpl(sl()),
+  );
+
+  if (sl.isRegistered<ProfileRepository>()) {
+    sl.unregister<ProfileRepository>();
+  }
+  sl.registerLazySingleton<ProfileRepository>(
+    () => ProfileRepositoryImpl(remoteDataSource: sl()),
+  );
+
+  if (sl.isRegistered<ProfileUseCase>()) {
+    sl.unregister<ProfileUseCase>();
+  }
+  sl.registerLazySingleton<ProfileUseCase>(
+    () => ProfileUseCase(repository: sl()),
   );
 }
