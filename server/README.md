@@ -97,7 +97,12 @@ Base path: `/v1/auth`
 Base path: `/v1/profile`
 
 - `GET /` - Protected route; returns current rider/driver profile
-- `PATCH /` - Protected route; updates profile fields
+- `PATCH /` - Protected route; legacy profile update route (kept for compatibility)
+- `POST /rider/create-user` - Protected route; create/complete rider profile (rider token only)
+- `POST|PATCH /rider/edit-user` - Protected route; edit rider profile (rider token only)
+- `POST /driver/create-user` - Protected route; create/complete driver profile (driver token only)
+- `POST|PATCH /driver/edit-user` - Protected route; edit driver profile (driver token only)
+- `POST|PATCH /driver/verify-document` - Protected route; upload required driver docs and mark onboarding as `documents_uploaded`
 
 Health check: `GET /health`
 
@@ -145,7 +150,34 @@ curl -H "Authorization: Bearer <accessToken>" \
   http://localhost:4000/v1/profile
 ```
 
-Update profile:
+Create rider profile:
+
+```bash
+curl -X POST http://localhost:4000/v1/profile/rider/create-user \
+  -H "Authorization: Bearer <riderAccessToken>" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Manan Sanghani","email":"manan@example.com","gender":"male"}'
+```
+
+Edit driver profile:
+
+```bash
+curl -X PATCH http://localhost:4000/v1/profile/driver/edit-user \
+  -H "Authorization: Bearer <driverAccessToken>" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Driver One","residentail_address":"Ahmedabad","vehical_type":"SUV","vehical_registration_no":"GJ01AB1234","passenger_capacity":4}'
+```
+
+Verify driver documents:
+
+```bash
+curl -X PATCH http://localhost:4000/v1/profile/driver/verify-document \
+  -H "Authorization: Bearer <driverAccessToken>" \
+  -H "Content-Type: application/json" \
+  -d '{"vehical_photo":"https://example.com/car.jpg","driving_license_photo":"https://example.com/license.jpg","vehical_rc_photo":"https://example.com/rc.jpg"}'
+```
+
+Legacy profile update:
 
 ```bash
 curl -X PATCH http://localhost:4000/v1/profile \

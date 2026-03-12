@@ -1,0 +1,18 @@
+## [1.0.0] — 2026-03-12
+### Changed
+- `GET /health` — added request and response examples.
+- `POST /v1/auth/request-otp` — added request body and success/error examples.
+- `POST /v1/auth/verify-otp` — added request body and success/error examples.
+- `POST /v1/auth/refresh` — added request body and success/error examples.
+- `POST /v1/auth/logout` — added request body and success response example.
+- `DELETE /v1/auth/delete/user` — added authorization header and success/error examples.
+- `GET /v1/profile` — added authorization header and success response example.
+- `PATCH /v1/profile` — added authorization header, request body, and success response example.
+- `POST /v1/profile/rider/create-user` — added authorization header, request body, and success/error examples.
+- `POST /v1/profile/rider/edit-user` — added authorization header, request body, and success response example.
+- `PATCH /v1/profile/rider/edit-user` — added authorization header, request body, and success response example.
+- `POST /v1/profile/driver/create-user` — added authorization header, request body, and success response example.
+- `POST /v1/profile/driver/edit-user` — added authorization header, request body, and success response example.
+- `PATCH /v1/profile/driver/edit-user` — added authorization header, request body, and success response example.
+- `POST /v1/profile/driver/verify-document` — added authorization header, request body, and success/error examples.
+- `PATCH /v1/profile/driver/verify-document` — added authorization header, request body, and success response example.
