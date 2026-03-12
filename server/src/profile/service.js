@@ -1,37 +1,87 @@
 import { pool } from '../common/db.js';
-import { USER_SAFE_COLUMNS } from '../common/userColumns.js';
+import {
+  USER_LOOKUP_ORDER,
+  USER_ROLES,
+  getUserIdColumnByRole,
+  getUserSafeColumnsByRole,
+  getUserTableByRole,
+  normalizeRole,
+} from '../common/userColumns.js';
 
-export async function findUserById(userId) {
-    const res = await pool.query(`SELECT ${USER_SAFE_COLUMNS} FROM users WHERE id=$1`, [userId]);
-    return res.rows[0];
+const COMMON_UPDATE_FIELD_MAP = Object.freeze({
+  name: 'name',
+  email: 'email',
+  photoLink: 'photo_link',
+  gender: 'gender',
+});
+
+const DRIVER_UPDATE_FIELD_MAP = Object.freeze({
+  residentailAddress: 'residentail_address',
+  vehicalType: 'vehical_type',
+  vehicalRegistrationNo: 'vehical_registration_no',
+  passengerCapacity: 'passenger_capacity',
+  vehicalPhoto: 'vehical_photo',
+  drivingLicensePhoto: 'driving_license_photo',
+  vehicalRcPhoto: 'vehical_rc_photo',
+  onboardingStatus: 'onboarding_status',
+});
+
+function getUpdateFieldMap(role) {
+  if (role === USER_ROLES.DRIVER) {
+    return { ...COMMON_UPDATE_FIELD_MAP, ...DRIVER_UPDATE_FIELD_MAP };
+  }
+  return COMMON_UPDATE_FIELD_MAP;
 }
 
-export async function updateUserProfile(userId, updates) {
-    const fields = [];
-    const values = [];
-    let idx = 1;
+async function findUserByIdAndRole(userId, role) {
+  const table = getUserTableByRole(role);
+  const idColumn = getUserIdColumnByRole(role);
+  const safeColumns = getUserSafeColumnsByRole(role);
 
-    if (updates.name !== undefined) {
-        fields.push(`name=$${idx++}`);
-        values.push(updates.name);
-    }
-    if (updates.email !== undefined) {
-        fields.push(`email=$${idx++}`);
-        values.push(updates.email);
-    }
-    if (updates.profilePhoto !== undefined) {
-        fields.push(`profile_photo=$${idx++}`);
-        values.push(updates.profilePhoto);
-    }
-    if (updates.gender !== undefined) {
-        fields.push(`gender=$${idx++}`);
-        values.push(updates.gender);
-    }
+  const sql = `SELECT ${safeColumns} FROM ${table} WHERE ${idColumn}=$1`;
+  const res = await pool.query(sql, [userId]);
+  return res.rows[0] ?? null;
+}
 
-    if (!fields.length) return null;
+export async function findUserById(userId, role) {
+  const normalizedRole = normalizeRole(role);
 
-    values.push(userId);
-    const sql = `UPDATE users SET ${fields.join(', ')} WHERE id=$${idx} RETURNING ${USER_SAFE_COLUMNS}`;
-    const res = await pool.query(sql, values);
-    return res.rows[0];
+  if (normalizedRole) {
+    return findUserByIdAndRole(userId, normalizedRole);
+  }
+
+  for (const candidateRole of USER_LOOKUP_ORDER) {
+    const user = await findUserByIdAndRole(userId, candidateRole);
+    if (user) return user;
+  }
+
+  return null;
+}
+
+export async function updateUserProfile(userId, role, updates) {
+  const normalizedRole = normalizeRole(role);
+  if (!normalizedRole) return null;
+
+  const table = getUserTableByRole(normalizedRole);
+  const idColumn = getUserIdColumnByRole(normalizedRole);
+  const safeColumns = getUserSafeColumnsByRole(normalizedRole);
+  const updateFieldMap = getUpdateFieldMap(normalizedRole);
+
+  const fields = [];
+  const values = [];
+  let index = 1;
+
+  for (const [key, value] of Object.entries(updates)) {
+    const column = updateFieldMap[key];
+    if (!column || value === undefined) continue;
+    fields.push(`${column}=$${index++}`);
+    values.push(value);
+  }
+
+  if (!fields.length) return null;
+
+  values.push(userId);
+  const sql = `UPDATE ${table} SET ${fields.join(', ')} WHERE ${idColumn}=$${index} RETURNING ${safeColumns}`;
+  const res = await pool.query(sql, values);
+  return res.rows[0] ?? null;
 }
