@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../common/theme/text_style/app_text_styles.dart';
 import '../../../i18n/localization.dart';
+import '../../../widgets/app_back_button.dart';
 import '../../../widgets/primary_button.dart';
 import '../../../widgets/primary_text_field.dart';
 import '../../../widgets/styling/app_colors.dart';
@@ -11,7 +12,6 @@ import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
 import '../constants/auth_constants.dart';
-import 'auth_shared_widgets.dart';
 
 class AuthPhoneHeader extends StatelessWidget {
   const AuthPhoneHeader({super.key});
@@ -20,7 +20,7 @@ class AuthPhoneHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return const Align(
       alignment: Alignment.centerLeft,
-      child: AuthBackButton(),
+      child: AppBackButton(),
     );
   }
 }
@@ -392,8 +392,6 @@ class AuthGetOtpButton extends StatelessWidget {
       buttonText: context.localization.authGetOtpButton,
       icon: Icons.arrow_forward,
       height: AuthConstants.primaryButtonHeight,
-      borderRadius: AuthConstants.primaryButtonRadius,
-      elevation: 0,
       textStyle: AppTextStyles.p2Regular.copyWith(
         fontWeight: FontWeight.w600,
         fontSize: 18,

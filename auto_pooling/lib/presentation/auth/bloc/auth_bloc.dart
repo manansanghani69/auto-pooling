@@ -136,11 +136,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           errorMessage: _mapFailureMessage(failure),
         ),
       ),
-      (_) => emit(
+      (data) => emit(
         state.copyWith(
           status: AuthStatus.otpVerified,
           lastAction: AuthAction.verifyOtp,
           errorMessage: '',
+          user: data.user,
+          isNewUser: data.isNewUser,
         ),
       ),
     );

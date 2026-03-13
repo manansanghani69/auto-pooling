@@ -1,5 +1,6 @@
 // src/auth/controller.js
 import * as authService from './service.js';
+import { normalizeRole } from '../common/userColumns.js';
 
 function toTrimmedString(value) {
     if (value === undefined || value === null) return '';
@@ -47,7 +48,7 @@ function sendSuccess(res, status, data) {
 export async function requestOtp(req, res) {
     try {
         const body = req.body ?? {};
-        const phone = toTrimmedString(body.phone);
+        const phone = toTrimmedString(body.phone ?? body.phone_no);
         if (!phone) return sendError(res, 400, 'phone required');
         
         const { otp, expiresIn } = await authService.requestOtp(phone);
@@ -65,22 +66,30 @@ export async function requestOtp(req, res) {
 export async function verifyOtp(req, res) {
     try {
         const body = req.body ?? {};
-        const phone = toTrimmedString(body.phone);
+        const phone = toTrimmedString(body.phone ?? body.phone_no);
         const otp = toTrimmedString(body.otp);
         const name = toTrimmedString(body.name);
-        const role = toOptionalTrimmedString(body.role);
+        const requestedRole = toOptionalTrimmedString(body.role);
+        const normalizedRole = requestedRole ? normalizeRole(requestedRole) : null;
+        if (requestedRole && !normalizedRole) {
+            return sendError(res, 400, 'role must be rider or driver');
+        }
 
         if (!phone || !otp) return sendError(res, 400, 'phone & otp required');
 
         const valid = await authService.verifyOtp(phone, otp);
         if (!valid) return sendError(res, 401, 'invalid otp');
 
-        let user = await authService.findUserByPhone(phone);
+        let user = await authService.findUserByPhone(phone, normalizedRole);
         let isNewUser = false;
 
         if (!user) {
             // if (!name) return sendError(res, 400, 'name required for new user');
-            user = await authService.createUser({ phone, name, role });
+            user = await authService.createUser({
+                phoneNo: phone,
+                name,
+                role: normalizedRole ?? 'rider',
+            });
             isNewUser = true;
         }
 
@@ -120,9 +129,11 @@ export async function logout(req, res) {
 
 export async function deleteAccount(req, res) {
     try {
-        const { userId } = req.body ?? {};
+        const body = req.body ?? {};
+        const userId = req.user?.sub ?? body.userId;
+        const role = req.user?.role ?? body.role;
         if (!userId) return sendError(res, 401, 'unauthorized');
-        const deleted = await authService.deleteUserById(userId);
+        const deleted = await authService.deleteUserById(userId, role);
         if (!deleted) return sendError(res, 404, 'user not found');
         return sendSuccess(res, 200, { ok: true });
     } catch (e) {
@@ -130,10 +141,3 @@ export async function deleteAccount(req, res) {
     }
 }
 
-export async function profile(req, res) {
-    try {
-        return sendSuccess(res, 200, { user: req.user });
-    } catch (e) {
-        return sendServerError(res, e);
-    }
-}

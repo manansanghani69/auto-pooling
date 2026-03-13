@@ -1,0 +1,4 @@
+$kind: collection
+name: auth
+description: Authentication endpoints for OTP-based login, token refresh, and logout.
+order: 1000

@@ -29,7 +29,7 @@ class PrimaryButton extends StatelessWidget {
     this.borderRadius = 12.0,
     this.iconSize = 16.0,
     this.iconSpacing = 8.0,
-    this.elevation = 4.0,
+    this.elevation = 10.0,
     this.backgroundColor,
     this.foregroundColor,
     this.shadowColor,

@@ -56,9 +56,14 @@ abstract class _$AppRouter extends RootStackRouter {
       );
     },
     ProfileRoute.name: (routeData) {
+      final args = routeData.argsAs<ProfileRouteArgs>(
+          orElse: () => const ProfileRouteArgs());
       return AutoRoutePage<dynamic>(
         routeData: routeData,
-        child: const ProfileScreen(),
+        child: ProfileScreen(
+          isEditing: args.isEditing,
+          key: args.key,
+        ),
       );
     },
     RideRequestRoute.name: (routeData) {
@@ -192,16 +197,40 @@ class PaymentsRoute extends PageRouteInfo<void> {
 
 /// generated route for
 /// [ProfileScreen]
-class ProfileRoute extends PageRouteInfo<void> {
-  const ProfileRoute({List<PageRouteInfo>? children})
-      : super(
+class ProfileRoute extends PageRouteInfo<ProfileRouteArgs> {
+  ProfileRoute({
+    bool isEditing = false,
+    Key? key,
+    List<PageRouteInfo>? children,
+  }) : super(
           ProfileRoute.name,
+          args: ProfileRouteArgs(
+            isEditing: isEditing,
+            key: key,
+          ),
           initialChildren: children,
         );
 
   static const String name = 'ProfileRoute';
 
-  static const PageInfo<void> page = PageInfo<void>(name);
+  static const PageInfo<ProfileRouteArgs> page =
+      PageInfo<ProfileRouteArgs>(name);
+}
+
+class ProfileRouteArgs {
+  const ProfileRouteArgs({
+    this.isEditing = false,
+    this.key,
+  });
+
+  final bool isEditing;
+
+  final Key? key;
+
+  @override
+  String toString() {
+    return 'ProfileRouteArgs{isEditing: $isEditing, key: $key}';
+  }
 }
 
 /// generated route for

@@ -12,6 +12,402 @@ This file defines how agents must operate in this repo. Follow it strictly.
 - Keep logic readable: prefer simple control flow, small methods, and clear naming. Do not overcomplicate logic.
 - Never use setState
 
+## SOLID principles (always follow)
+All code written in this project must adhere to SOLID principles. These are non-negotiable design guidelines that ensure maintainability, testability, and scalability.
+
+### S - Single Responsibility Principle
+Every class, widget, or function should have one clear responsibility. If a class does multiple things, split it.
+
+**Example (correct):**
+```dart
+// Good: Each class has a single, clear responsibility
+class UserRepository {
+  Future<User> getUser(String id) async {
+    // Only handles data fetching
+    final response = await _apiClient.get('/users/$id');
+    return User.fromJson(response.data);
+  }
+}
+
+class UserValidator {
+  bool isValidEmail(String email) {
+    // Only handles validation logic
+    return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
+  }
+}
+
+class UserBloc extends Bloc<UserEvent, UserState> {
+  // Only handles state management and business logic coordination
+  UserBloc({required this.repository, required this.validator});
+  
+  void _onLoadUser(LoadUserEvent event, Emitter<UserState> emit) async {
+    final result = await repository.getUser(event.userId);
+    result.fold(
+      (failure) => emit(UserError(failure.message)),
+      (user) => emit(UserLoaded(user)),
+    );
+  }
+}
+```
+
+**Example (incorrect):**
+```dart
+// Bad: Class does too many things
+class UserManager {
+  Future<User> getUser(String id) async { /* data fetching */ }
+  bool isValidEmail(String email) { /* validation */ }
+  void updateUI(User user) { /* UI updates */ }
+  void saveToCache(User user) { /* caching */ }
+}
+```
+
+### O - Open/Closed Principle
+Classes should be open for extension but closed for modification. Use abstraction and inheritance to add new features without changing existing code.
+
+**Example (correct):**
+```dart
+// Good: Abstract base allows extension without modification
+abstract class PaymentProcessor {
+  Future<PaymentResult> processPayment(PaymentRequest request);
+}
+
+class CreditCardProcessor extends PaymentProcessor {
+  @override
+  Future<PaymentResult> processPayment(PaymentRequest request) async {
+    // Credit card specific logic
+    return PaymentResult.success();
+  }
+}
+
+class PayPalProcessor extends PaymentProcessor {
+  @override
+  Future<PaymentResult> processPayment(PaymentRequest request) async {
+    // PayPal specific logic
+    return PaymentResult.success();
+  }
+}
+
+// Adding new payment methods doesn't require modifying existing code
+class CryptoProcessor extends PaymentProcessor {
+  @override
+  Future<PaymentResult> processPayment(PaymentRequest request) async {
+    // Crypto specific logic
+    return PaymentResult.success();
+  }
+}
+```
+
+**Example (incorrect):**
+```dart
+// Bad: Adding new payment types requires modifying existing class
+class PaymentProcessor {
+  Future<PaymentResult> processPayment(PaymentRequest request, String type) async {
+    if (type == 'credit_card') {
+      // credit card logic
+    } else if (type == 'paypal') {
+      // paypal logic
+    } else if (type == 'crypto') { // Have to modify this method every time
+      // crypto logic
+    }
+  }
+}
+```
+
+### L - Liskov Substitution Principle
+Subclasses must be substitutable for their base classes without breaking functionality. Don't override methods in ways that violate expected behavior.
+
+**Example (correct):**
+```dart
+// Good: Subtypes maintain base class contract
+abstract class DataSource {
+  Future<List<Product>> getProducts();
+}
+
+class RemoteDataSource implements DataSource {
+  @override
+  Future<List<Product>> getProducts() async {
+    final response = await _apiClient.get('/products');
+    return response.data.map((json) => Product.fromJson(json)).toList();
+  }
+}
+
+class LocalDataSource implements DataSource {
+  @override
+  Future<List<Product>> getProducts() async {
+    final jsonList = await _cacheManager.getCachedProducts();
+    return jsonList.map((json) => Product.fromJson(json)).toList();
+  }
+}
+
+// Can use either data source interchangeably
+class ProductRepository {
+  ProductRepository(this._dataSource);
+  final DataSource _dataSource;
+  
+  Future<List<Product>> getProducts() => _dataSource.getProducts();
+}
+```
+
+**Example (incorrect):**
+```dart
+// Bad: Subtype violates base class contract
+abstract class DataSource {
+  Future<List<Product>> getProducts();
+}
+
+class BrokenDataSource implements DataSource {
+  @override
+  Future<List<Product>> getProducts() async {
+    throw UnimplementedError(); // Violates expected behavior
+  }
+}
+```
+
+### I - Interface Segregation Principle
+Don't force classes to implement interfaces they don't use. Create smaller, focused interfaces instead of large, monolithic ones.
+
+**Example (correct):**
+```dart
+// Good: Small, focused interfaces
+abstract class Readable {
+  Future<String> read();
+}
+
+abstract class Writable {
+  Future<void> write(String data);
+}
+
+abstract class Deletable {
+  Future<void> delete();
+}
+
+// Classes implement only what they need
+class FileReader implements Readable {
+  @override
+  Future<String> read() async {
+    // Read implementation
+  }
+}
+
+class FileWriter implements Writable {
+  @override
+  Future<void> write(String data) async {
+    // Write implementation
+  }
+}
+
+class FileManager implements Readable, Writable, Deletable {
+  @override
+  Future<String> read() async { /* ... */ }
+  
+  @override
+  Future<void> write(String data) async { /* ... */ }
+  
+  @override
+  Future<void> delete() async { /* ... */ }
+}
+```
+
+**Example (incorrect):**
+```dart
+// Bad: Monolithic interface forces unnecessary implementations
+abstract class FileOperations {
+  Future<String> read();
+  Future<void> write(String data);
+  Future<void> delete();
+  Future<void> compress();
+  Future<void> encrypt();
+}
+
+class SimpleFileReader implements FileOperations {
+  @override
+  Future<String> read() async { /* actual implementation */ }
+  
+  // Forced to implement methods it doesn't need
+  @override
+  Future<void> write(String data) async => throw UnimplementedError();
+  
+  @override
+  Future<void> delete() async => throw UnimplementedError();
+  
+  @override
+  Future<void> compress() async => throw UnimplementedError();
+  
+  @override
+  Future<void> encrypt() async => throw UnimplementedError();
+}
+```
+
+### D - Dependency Inversion Principle
+High-level modules should not depend on low-level modules. Both should depend on abstractions. This is enforced through our dependency injection setup.
+
+**Example (correct):**
+```dart
+// Good: Depends on abstraction (interface), not concrete implementation
+abstract class AuthRepository {
+  Future<ResultFuture<User>> login(String email, String password);
+  Future<ResultFuture<void>> logout();
+}
+
+class AuthRepositoryImpl implements AuthRepository {
+  AuthRepositoryImpl({
+    required this.remoteDataSource,
+    required this.localDataSource,
+  });
+  
+  final AuthRemoteDataSource remoteDataSource;
+  final AuthLocalDataSource localDataSource;
+  
+  @override
+  Future<ResultFuture<User>> login(String email, String password) async {
+    // Implementation details
+  }
+  
+  @override
+  Future<ResultFuture<void>> logout() async {
+    // Implementation details
+  }
+}
+
+// BLoC depends on abstraction, not concrete class
+class AuthBloc extends Bloc<AuthEvent, AuthState> {
+  AuthBloc({required this.authRepository}); // Depends on interface
+  
+  final AuthRepository authRepository; // Not AuthRepositoryImpl
+}
+
+// Dependency injection configuration
+sl.registerLazySingleton<AuthRepository>(
+  () => AuthRepositoryImpl(
+    remoteDataSource: sl(),
+    localDataSource: sl(),
+  ),
+);
+```
+
+**Example (incorrect):**
+```dart
+// Bad: Direct dependency on concrete implementation
+class AuthBloc extends Bloc<AuthEvent, AuthState> {
+  AuthBloc() {
+    // Creates concrete dependency directly - can't be tested or swapped
+    _repository = AuthRepositoryImpl(
+      remoteDataSource: FirebaseAuthDataSource(),
+      localDataSource: SharedPrefsDataSource(),
+    );
+  }
+  
+  late final AuthRepositoryImpl _repository; // Concrete class, not interface
+}
+```
+
+### SOLID in widget composition
+Widgets should also follow SOLID principles, especially Single Responsibility:
+
+**Example (correct):**
+```dart
+// Good: Each widget has a single, clear purpose
+class ProductCard extends StatelessWidget {
+  const ProductCard({required this.product, super.key});
+  final Product product;
+  
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Column(
+        children: [
+          ProductImage(imageUrl: product.imageUrl),
+          ProductTitle(title: product.title),
+          ProductPrice(price: product.price),
+          AddToCartButton(productId: product.id),
+        ],
+      ),
+    );
+  }
+}
+
+class ProductImage extends StatelessWidget {
+  const ProductImage({required this.imageUrl, super.key});
+  final String imageUrl;
+  
+  @override
+  Widget build(BuildContext context) {
+    // Only responsible for displaying image
+    return CachedNetworkImage(imageUrl: imageUrl);
+  }
+}
+
+class ProductPrice extends StatelessWidget {
+  const ProductPrice({required this.price, super.key});
+  final double price;
+  
+  @override
+  Widget build(BuildContext context) {
+    // Only responsible for formatting and displaying price
+    return Text(
+      '\$${price.toStringAsFixed(2)}',
+      style: AppTextStyles.h3Bold.copyWith(
+        color: context.currentTheme.textNeutralPrimary,
+      ),
+    );
+  }
+}
+```
+
+**Example (incorrect):**
+```dart
+// Bad: Widget does too many things
+class ProductCard extends StatelessWidget {
+  const ProductCard({required this.product, super.key});
+  final Product product;
+  
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Column(
+        children: [
+          // Image loading logic inline
+          FutureBuilder<ui.Image>(
+            future: _loadImage(product.imageUrl),
+            builder: (context, snapshot) { /* complex logic */ },
+          ),
+          // Price calculation and formatting inline
+          Builder(
+            builder: (context) {
+              final discount = product.discount ?? 0;
+              final finalPrice = product.price * (1 - discount);
+              final formattedPrice = '\$${finalPrice.toStringAsFixed(2)}';
+              return Text(formattedPrice); // Mixed responsibilities
+            },
+          ),
+          // Cart logic inline
+          ElevatedButton(
+            onPressed: () {
+              // Inline cart logic instead of delegating
+              context.read<CartBloc>().add(AddToCartEvent(product.id));
+              ScaffoldMessenger.of(context).showSnackBar(/* ... */);
+            },
+            child: const Text('Add to Cart'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+```
+
+### Applying SOLID to this codebase
+When writing code for this project:
+1. **Before creating a class**, ask: "What is its single responsibility?"
+2. **Before adding a method**, ask: "Does this belong here, or should it be in a separate class?"
+3. **When designing features**, create abstractions (interfaces/abstract classes) first, then implementations
+4. **Use dependency injection** for all dependencies - never create instances directly in classes
+5. **Keep widgets small** - each widget should do one thing well
+6. **Prefer composition over inheritance** - build complex behavior by combining simple pieces
+7. **Make dependencies explicit** - pass them through constructors, not hidden in implementations
+
+These principles ensure the codebase remains maintainable as it grows and makes testing straightforward.
+
 ## Project structure (strict)
 Do not invent new layout conventions. Follow the existing structure:
 - `lib/presentation/` feature modules (UI + BLoC + data/domain when needed).
@@ -207,318 +603,124 @@ Future<void> configureDependencies({ ... }) async {
 
   final cacheManager = CacheManager();
   await cacheManager.initialize();
-  sl.registerSingleton<CacheManager>(cacheManager);
+  sl.registerLazySingleton<CacheManager>(() => cacheManager);
 
-  final pinnedDio = dio ?? Dio(BaseOptions(baseUrl: AppConfig.baseUrl));
-  _registerDioInterceptor(pinnedDio);
-  sl<CacheManager>().attachCacheInterceptor(pinnedDio);
-
-  sl
-    ..registerLazySingleton(() => GetProducts(sl()))
-    ..registerLazySingleton<ProductRepository>(
-      () => ProductRepositoryImpl(sl()),
-    )
-    ..registerLazySingleton<Dio>(() => pinnedDio);
-}
-```
-
-Resolve dependencies with `sl<T>()` (see `lib/presentation/home/home_screen.dart` and `lib/presentation/login/bloc/login_bloc.dart`).
-
-Example usage (from `lib/presentation/login/bloc/login_bloc.dart`):
-```dart
-final FirebaseAuthService _firebaseAuthService = sl();
-```
-
-Example usage (from `lib/initialize_app.dart`):
-```dart
-await configureDependencies(
-  firebaseAuth: firebaseAuth,
-  firebaseAuthService: firebaseAuthService,
-  dio: dio,
-);
-```
-
-## Networking and error handling
-`Dio` is configured in DI with SSL pinning and auth interceptors in `lib/core/services/injection_container.dart`.
-Use `APIException` and `APIFailure` with `ResultFuture` for repository results.
-How to use it:
-- Remote datasources perform the HTTP call and throw `APIException` on non-200 responses.
-- Repositories catch `APIException` and map to `APIFailure`.
-- BLoCs use the usecase/repository result and `fold` to emit states.
-
-Example (from `lib/presentation/home/data/repositories/product_repository_impl.dart`):
-```dart
-try {
-  final List<ProductModel> result = await _remoteDatasource.getProducts();
-  return Right(result);
-} on APIException catch (e) {
-  return Left(APIFailure.fromException(e));
-}
-```
-
-Example (remote datasource from `lib/presentation/home/data/datasources/product_remote_data_source.dart`):
-```dart
-final response = await _dio.get(
-  kGetProductEndpoint,
-  options: sl<CacheManager>().defaultCacheOptions.toOptions(),
-);
-
-if (response.statusCode != 200) {
-  throw APIException(
-    message: response.data,
-    statusCode: response.statusCode ?? 500,
+  sl.registerLazySingleton<ProductRepository>(
+    () => ProductRepositoryImpl(
+      remoteDataSource: sl(),
+      localDataSource: sl(),
+    ),
   );
 }
 ```
 
-## Model serialization (required)
-- All models in `lib/**/data/models/` must use `json_serializable`.
-- Include `@JsonSerializable`, `fromJson`/`toJson`, and `part '*.g.dart'`; do not hand-roll JSON parsing in models.
-
-## API caching (optional)
-Caching is opt-in. Only use it when asked.
-`CacheManager` lives in `lib/utils/cache_manager.dart` and is attached to `Dio`.
-How to use it:
-- Add cache options to specific API calls when caching is required.
-- Use `noCacheOptions()` or `customCacheOptions(...)` to override defaults.
-
-Example (from `lib/presentation/home/data/datasources/product_remote_data_source.dart`):
-```dart
-final response = await _dio.get(
-  kGetProductEndpoint,
-  options: sl<CacheManager>().defaultCacheOptions.toOptions(),
-);
-```
-
-Use `sl<CacheManager>().noCacheOptions()` or `customCacheOptions(...)` if you need to override caching behavior.
-
 ## Routing (AutoRoute)
-Routes are defined in `lib/routes.dart` and generated into `lib/routes.gr.dart`. Do not edit generated routes directly.
-How to use it:
-- Annotate screens with `@RoutePage()`.
-- Add the route to the list in `lib/routes.dart`.
-- Navigate using `context.pushRoute(...)` or `context.router.push(...)`.
+Use AutoRoute for navigation. Routes live in `lib/routes.dart` (manually edited) and `lib/routes.gr.dart` (generated).
+- Add new routes to `lib/routes.dart`, then run `dart run build_runner build --delete-conflicting-outputs`.
+- Use `context.pushRoute(...)`, `context.replaceRoute(...)`, `context.popRoute()`, etc.
 
 Example (from `lib/routes.dart`):
 ```dart
 @AutoRouterConfig()
 class AppRouter extends RootStackRouter {
   @override
-  List<AutoRoute> get routes => _getRoutes();
+  List<AutoRoute> get routes => [
+    AutoRoute(page: SplashRoute.page, initial: true),
+    AutoRoute(page: HomeRoute.page),
+    AutoRoute(page: LoginWithPhoneNumberRoute.page),
+  ];
 }
 ```
 
-Screens must be annotated with `@RoutePage()`.
-
-Example (from `lib/presentation/home/home_screen.dart`):
+Example (from `lib/presentation/login/screens/login_with_phone_number/login_with_phone_number_screen.dart`):
 ```dart
-@RoutePage()
-class HomeScreen extends StatelessWidget { ... }
+context.pushRoute(PhoneNumberOTPRoute(
+  loginBloc: context.read<LoginBloc>(),
+  isFromDeleteAccount: false,
+));
 ```
 
-Navigation examples:
-- `context.pushRoute(const WishlistRoute());` (see `lib/presentation/empty_screens/empty_view_screens.dart`)
-- `context.router.push(const EditAddressRoute());` (see `lib/presentation/checkout/widget/shipping_address.dart`)
+## Error handling (typed failures)
+All repository/usecase methods return `ResultFuture<T>` (a typedef for `Future<Either<Failure, T>>`).
+- Define failure types in `lib/core/errors/failures.dart`.
+- Handle errors in BLoCs using `.fold` to emit the correct state.
 
-Use `rootNavigatorKey` from `lib/main.dart` for navigation outside widget context.
-
-## Authentication (common)
-Authentication is handled by `FirebaseAuthService` in `lib/services/firebase_auth_services.dart`.
-It is registered in DI and used in BLoCs (e.g., `lib/presentation/login/bloc/login_bloc.dart`).
-How to use it:
-- Call auth methods inside BLoC handlers and emit states based on success or error.
-- Use the `onError` callback to map errors into BLoC events or UI messages.
-
-Example (from `lib/presentation/login/bloc/login_bloc.dart`):
+Example (from `lib/presentation/home/bloc/home_bloc.dart`):
 ```dart
-final userCredential =
-    await _firebaseAuthService.signInWithEmailAndPassword(
-  email,
-  password,
-  onError: (error, {stackTrace}) {
-    add(AuthenticationExceptionEvent(errorMessage: error));
-  },
+final result = await _getProducts();
+result.fold(
+  (failure) => emit(AuthenticationError(state, errorMessage: failure.errorMessage)),
+  (products) => emit(TopProductsLoadedState(state, topProducts: products)),
 );
 ```
 
-Auth-driven side effects:
-- `lib/main.dart` listens to `FirebaseAuth.instance.authStateChanges()` to set up notifications.
-- `lib/core/services/injection_container.dart` handles 401/403 by clearing prefs/cache and routing to login.
+## Localization
+Use `context.localization` for user-facing text. Localized strings live in `lib/l10n/app_*.arb` files.
+- Do not hardcode user-visible text in widgets; use keys from localization.
+- Generate localizations with `flutter gen-l10n` (already configured in `pubspec.yaml`).
 
-## Local storage
-Use `Prefs` in `lib/shared_pref/prefs.dart` for non-sensitive data.
-Use keys from `lib/shared_pref/pref_keys.dart`.
-How to use it:
-- Initialize prefs in `MainApp.initState()` before accessing values.
-- Store and read values using `Prefs.set*` and `Prefs.get*`.
-
-Example (from `lib/services/theme_service.dart`):
+Example (from `lib/presentation/login/screens/login_with_phone_number/widgets/heading_welcome_widget.dart`):
 ```dart
-await Prefs.setString(_themeModeKey, mode.name);
-final savedMode = await Prefs.getString(_themeModeKey);
-```
-
-Example (initialization from `lib/main.dart`):
-```dart
-@override
-void initState() {
-  super.initState();
-  Prefs.init();
-}
-```
-
-Secure storage is optional:
-`lib/services/secure_storage_service.dart` is not used by default (see its header comment). Only use it if explicitly requested.
-
-## Notifications (common)
-`NotificationService` in `lib/services/notification_service.dart` handles FCM and local notifications.
-`lib/main.dart` wires it up and listens for notification taps.
-How to use it:
-- Initialize after authentication (`main.dart` does this on auth state changes).
-- Listen to `onNotificationTap` for navigation.
-
-Example (from `lib/main.dart`):
-```dart
-_notificationSubscription =
-    NotificationService.instance.onNotificationTap.listen((payload) {
-  _handleNotificationTap(payload);
-});
-```
-
-## Deep links (optional, implemented)
-Deep links are managed by `AppDeepLinkManager` in `lib/core/deep_link/app_deep_link_manager.dart`.
-It is initialized in `lib/main.dart` and used in `lib/presentation/initial/initial_screen.dart`.
-How to use it:
-- Initialize in `main.dart` after the first frame.
-- In the initial screen, check for pending deep links and route accordingly.
-
-Example (from `lib/main.dart`):
-```dart
-WidgetsBinding.instance.addPostFrameCallback((_) async {
-  await sl<AppDeepLinkManager>().initializeDeepLink();
-});
-```
-
-Example (from `lib/presentation/initial/initial_screen.dart`):
-```dart
-if (deepLinkManager.hasPendingDeepLink) {
-  final isDeepLinkHandled =
-      await deepLinkManager.handlePendingDeepLink(context);
-  if (!isDeepLinkHandled) {
-    await context.router.replace(const HomeRoute());
-  }
-}
-```
-
-## Environment, flavors, and SSL pinning
-Environment is configured via `.env` and `AppConfig` in `lib/utils/app_flavor_env.dart`.
-`lib/initialize_app.dart` loads `.env` before DI.
-How to use it:
-- Add env values in `.env` and access them via `AppConfig`.
-- Load `.env` in `initialize_app.dart` before dependency setup.
-
-Example (from `lib/utils/app_flavor_env.dart`):
-```dart
-static String get baseUrl {
-  switch (appFlavor) {
-    case AppFlavor.dev:
-      return dotenv.env['DEV_API_BASE_URL'] ?? '';
-    case AppFlavor.stage:
-      return dotenv.env['STAGE_API_BASE_URL'] ?? '';
-    case AppFlavor.prod:
-      return dotenv.env['PROD_API_BASE_URL'] ?? '';
-  }
-}
-```
-
-Example (from `lib/initialize_app.dart`):
-```dart
-await dotenv.load();
-```
-
-SSL pinning is enforced in `lib/core/services/injection_container.dart` via `CertificatePinningInterceptor` and `_getCertHash()`.
-
-## Theme and styling
-Theme is controlled by `ThemeBloc` (`lib/utils/theme/bloc`) and `ThemeService` (`lib/services/theme_service.dart`).
-`AppThemesData` and `AppColors` define base theming.
-How to use it:
-- Use `ThemeBloc` in `main.dart` to drive `themeMode`.
-- Apply `AppTextStyles` and theme colors in widgets.
-
-Example (from `lib/main.dart`):
-```dart
-return BlocBuilder<ThemeBloc, ThemeState>(
-  builder: (context, state) {
-    return MaterialApp.router(
-      theme: AppThemesData.themeData[AppThemeEnum.LightTheme]!,
-      darkTheme: AppThemesData.themeData[AppThemeEnum.DarkTheme]!,
-      themeMode: state.themeMode,
-```
-
-Use `AppTextStyles` (`lib/common/theme/text_style/app_text_styles.dart`) and `AppColors` (`lib/widgets/styling/app_colors.dart`) for UI consistency.
-
-## Localization (i18n)
-Localization lives in `lib/i18n/`. Use the `LocalizationContext` extension.
-How to use it:
-- In widgets, use `context.localization.*`.
-- In BLoCs needing localized strings, pass `AppLocalizations` via the constructor.
-
-Example (from `lib/i18n/localization.dart`):
-```dart
-extension LocalizationContext on BuildContext {
-  AppLocalizations get localization => AppLocalizations.of(this)!;
-}
-```
-
-Use `context.localization.*` in widgets (see `lib/presentation/wishlist/widgets/empty_wishlist_view.dart`).
-
-Example (from `lib/presentation/login/bloc/login_bloc.dart`):
-```dart
-final AppLocalizations localizations;
-
-LoginBloc({
-  required this.localizations,
-}) : super(LoginState.initial()) { ... }
-```
-
-## Analytics (optional, implemented)
-Microsoft Clarity analytics is used via `ClarityRouteObserver` in
-`lib/core/clarity_analytics/clarity_route_observer.dart` and
-`Clarity.setCurrentScreenName(...)` (see `lib/presentation/home/home_screen.dart`).
-How to use it:
-- Add `ClarityRouteObserver()` to `MaterialApp.router` observers.
-- Call `Clarity.setCurrentScreenName(...)` in screens as needed.
-
-Example (from `lib/main.dart`):
-```dart
-routerConfig: appRouter.config(
-  navigatorObservers: () => [
-    ClarityRouteObserver(),
-  ],
+Text(
+  context.localization.welcome,
+  style: AppTextStyles.h1Bold.copyWith(
+    color: context.currentTheme.textNeutralPrimary,
+  ),
 ),
 ```
 
-Example (from `lib/presentation/home/home_screen.dart`):
+## Theming
+Use theme extensions for colors and `AppTextStyles` for text styles.
+- Colors: `context.currentTheme.textNeutralPrimary`, `context.currentTheme.backgroundSurface`, etc.
+- Text styles: `AppTextStyles.h1Bold`, `AppTextStyles.p2Regular`, etc.
+
+Example:
 ```dart
-final String screenName = pages[currentIndex].runtimeType.toString();
-Clarity.setCurrentScreenName(screenName);
+Container(
+  color: context.currentTheme.backgroundPrimary,
+  child: Text(
+    'Hello',
+    style: AppTextStyles.h2Bold.copyWith(
+      color: context.currentTheme.textNeutralPrimary,
+    ),
+  ),
+),
 ```
 
-## Optional feature modules present in this repo
-These features exist but should only be used when requested:
-- Biometrics: `lib/services/local_auth_services.dart` and `lib/presentation/biometric_auth/`
-- Remote config / force update: `lib/services/remote_config_service.dart` and `lib/presentation/force_update/`
-- App tour: `lib/core/services/app_tour_service.dart`
-- Subscriptions: `lib/services/subscription_service.dart` and `lib/presentation/subscription/`
+## Assets and code generation
+- Images/icons go in `assets/images/` and `assets/icons/`.
+- Register assets in `pubspec.yaml` under `flutter: assets:`.
+- Run `dart run build_runner build --delete-conflicting-outputs` to generate `lib/gen/assets.gen.dart`.
+- Reference assets with `Assets.images.logo`, `Assets.icons.search`, etc.
 
-Do not add or modify these unless the user asks.
-
-Example usage (only when requested):
-- Biometrics (from `lib/presentation/initial/initial_screen.dart`):
+Example:
 ```dart
-final localAuthService = sl<LocalAuthService>();
-final biometricAuthStatus =
-    await localAuthService.authenticate(context.localization);
+Image.asset(Assets.images.appLogo.path)
+```
+
+## Analytics and tracking
+Use `AnalyticsService` for logging events.
+Example (from `lib/core/analytics/analytics_service.dart`):
+```dart
+AnalyticsService.logEvent(AnalyticsEvents.userLoggedIn, parameters: {
+  'method': 'phone',
+});
+```
+
+## Deep links (uni_links)
+Handle deep links in `lib/core/services/deep_link_service.dart`.
+
+## App services
+- Firebase Auth: `lib/services/firebase_auth_service.dart`
+```dart
+final authService = sl<FirebaseAuthService>();
+final result = await authService.signInWithEmail(email: email, password: password);
+```
+
+- Notifications (Firebase Messaging / local notifications):
+```dart
+final notificationService = sl<NotificationService>();
+await notificationService.initialize();
 ```
 
 - Remote config / force update (from `lib/presentation/initial/initial_screen.dart`):
@@ -554,7 +756,7 @@ Add tests only when the user asks. Follow the patterns below so a module can be 
 
 ### Unit tests (pure Dart / utils)
 - Location: `test/utils/`, `test/presentation/**/bloc/` for pure logic.
-- Use `flutter_test`’s `test`/`group`.
+- Use `flutter_test`'s `test`/`group`.
 - Keep cases small and readable; prefer data-driven expectations.
 
 Example (from `test/utils/extensions/primitive_types_extensions_test.dart`):

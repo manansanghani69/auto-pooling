@@ -23,6 +23,11 @@ import 'package:auto_pooling/presentation/onboarding/bloc/onboarding_event.dart'
 import 'package:auto_pooling/presentation/onboarding/constants/onboarding_constants.dart';
 import 'package:auto_pooling/presentation/onboarding/widgets/onboarding_widgets.dart';
 import 'package:auto_pooling/presentation/payments/payments_screen.dart';
+import 'package:auto_pooling/presentation/profile/bloc/profile_bloc.dart';
+import 'package:auto_pooling/presentation/profile/bloc/profile_state.dart';
+import 'package:auto_pooling/presentation/profile/domain/entities/profile_entity.dart';
+import 'package:auto_pooling/presentation/profile/domain/repositories/profile_repository.dart';
+import 'package:auto_pooling/presentation/profile/domain/usecases/profile_usecase.dart';
 import 'package:auto_pooling/presentation/profile/profile_screen.dart';
 import 'package:auto_pooling/presentation/ride_request/ride_request_screen.dart';
 import 'package:auto_pooling/presentation/ride_tracking/ride_tracking_screen.dart';
@@ -295,9 +300,19 @@ void main() {
 
     testWidgets('profile', (WidgetTester tester) async {
       await _runGoldenTest(tester, () async {
+        final TestProfileBloc bloc =
+            TestProfileBloc(profileUseCase: _buildProfileUseCase());
+        bloc.emitState(
+          ProfileState.initial().copyWith(
+            status: ProfileStatus.ready,
+            isEditing: false,
+          ),
+        );
+        addTearDown(bloc.close);
+
         await _pumpGolden(
           tester,
-          _buildTestApp(child: const ProfileScreen()),
+          _buildTestApp(child: _buildProfileScaffold(bloc)),
         );
 
         await _expectGolden(tester, 'goldens/profile_default.png');
@@ -312,6 +327,105 @@ void main() {
         );
 
         await _expectGolden(tester, 'goldens/notifications_default.png');
+      });
+    });
+  });
+
+  group('Profile states', () {
+    testWidgets('edit', (WidgetTester tester) async {
+      await _runGoldenTest(tester, () async {
+        final TestProfileBloc bloc =
+            TestProfileBloc(profileUseCase: _buildProfileUseCase());
+        bloc.emitState(
+          ProfileState.initial().copyWith(
+            status: ProfileStatus.ready,
+            isEditing: true,
+            fullName: 'Jane Doe',
+            email: 'jane@example.com',
+            gender: ProfileGender.female,
+          ),
+        );
+        addTearDown(bloc.close);
+
+        await _pumpGolden(
+          tester,
+          _buildTestApp(child: _buildProfileScaffold(bloc)),
+        );
+
+        await _expectGolden(tester, 'goldens/profile_edit.png');
+      });
+    });
+
+    testWidgets('saving', (WidgetTester tester) async {
+      await _runGoldenTest(tester, () async {
+        final TestProfileBloc bloc =
+            TestProfileBloc(profileUseCase: _buildProfileUseCase());
+        bloc.emitState(
+          ProfileState.initial().copyWith(
+            status: ProfileStatus.saving,
+            isEditing: true,
+            fullName: 'Jane Doe',
+            email: 'jane@example.com',
+          ),
+        );
+        addTearDown(bloc.close);
+
+        await _pumpGolden(
+          tester,
+          _buildTestApp(child: _buildProfileScaffold(bloc)),
+        );
+
+        await _expectGolden(tester, 'goldens/profile_saving.png');
+      });
+    });
+
+    testWidgets('invalid email', (WidgetTester tester) async {
+      await _runGoldenTest(tester, () async {
+        final TestProfileBloc bloc =
+            TestProfileBloc(profileUseCase: _buildProfileUseCase());
+        bloc.emitState(
+          ProfileState.initial().copyWith(
+            status: ProfileStatus.ready,
+            fullName: 'Jane Doe',
+            email: 'invalid-email',
+          ),
+        );
+        addTearDown(bloc.close);
+
+        await _pumpGolden(
+          tester,
+          _buildTestApp(child: _buildProfileScaffold(bloc)),
+        );
+
+        await tester.tap(find.byType(ElevatedButton));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 200));
+
+        await _expectGolden(tester, 'goldens/profile_invalid_email.png');
+      });
+    });
+
+    testWidgets('photo selected', (WidgetTester tester) async {
+      await _runGoldenTest(tester, () async {
+        final TestProfileBloc bloc =
+            TestProfileBloc(profileUseCase: _buildProfileUseCase());
+        bloc.emitState(
+          ProfileState.initial().copyWith(
+            status: ProfileStatus.ready,
+            fullName: 'Jane Doe',
+            email: 'jane@example.com',
+            photoPath: 'web/icons/Icon-192.png',
+          ),
+        );
+        addTearDown(bloc.close);
+
+        await _pumpGolden(
+          tester,
+          _buildTestApp(child: _buildProfileScaffold(bloc)),
+        );
+        await tester.pumpAndSettle();
+
+        await _expectGolden(tester, 'goldens/profile_photo_selected.png');
       });
     });
   });
@@ -403,14 +517,50 @@ Widget _buildAuthOtpScaffold(AuthBloc bloc) {
   );
 }
 
+Widget _buildProfileScaffold(ProfileBloc bloc) {
+  return BlocProvider<ProfileBloc>.value(
+    value: bloc,
+    child: const ProfileScreenScaffold(),
+  );
+}
+
 AuthUseCase _buildAuthUseCase() {
   return AuthUseCase(repository: _StubAuthRepository());
+}
+
+ProfileUseCase _buildProfileUseCase() {
+  return ProfileUseCase(repository: _StubProfileRepository());
+}
+
+ProfileEntity _defaultProfileEntity({
+  String name = 'Jane Doe',
+  String? email = 'jane@example.com',
+  String? gender = 'Female',
+}) {
+  return ProfileEntity(
+    id: 'profile-1',
+    phone: '+1234567890',
+    name: name,
+    email: email,
+    profilePhoto: null,
+    gender: gender,
+    role: 'rider',
+    createdAt: DateTime.utc(2024, 1, 1),
+  );
 }
 
 class TestAuthBloc extends AuthBloc {
   TestAuthBloc({required super.authUseCase});
 
   void setState(AuthState state) {
+    emit(state);
+  }
+}
+
+class TestProfileBloc extends ProfileBloc {
+  TestProfileBloc({required super.profileUseCase});
+
+  void emitState(ProfileState state) {
     emit(state);
   }
 }
@@ -453,6 +603,26 @@ class _StubAuthRepository implements AuthRepository {
   @override
   ResultFuture<LogoutEntity> logout() {
     return Future.value(const Result.success(LogoutEntity(ok: true)));
+  }
+}
+
+class _StubProfileRepository implements ProfileRepository {
+  @override
+  ResultFuture<ProfileEntity> getProfile() {
+    return Future.value(Result.success(_defaultProfileEntity()));
+  }
+
+  @override
+  ResultFuture<ProfileEntity> updateProfile({
+    required String name,
+    String? email,
+    String? gender,
+  }) {
+    return Future.value(
+      Result.success(
+        _defaultProfileEntity(name: name, email: email, gender: gender),
+      ),
+    );
   }
 }
 

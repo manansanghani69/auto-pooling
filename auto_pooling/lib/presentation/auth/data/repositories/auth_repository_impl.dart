@@ -84,11 +84,17 @@ class AuthRepositoryImpl implements AuthRepository {
     if (result.user.id.isNotEmpty) {
       await Prefs.setString(PrefKeys.riderId, result.user.id);
     }
+    if (result.user.name.isNotEmpty) {
+      await Prefs.setString(PrefKeys.profileName, result.user.name);
+    }
   }
 
   Future<void> _clearAuth() async {
     await Prefs.remove(PrefKeys.authToken);
     await Prefs.remove(PrefKeys.refreshToken);
     await Prefs.remove(PrefKeys.riderId);
+    await Prefs.remove(PrefKeys.profileName);
+    await Prefs.remove(PrefKeys.profileEmail);
+    await Prefs.remove(PrefKeys.profileGender);
   }
 }
