@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 import authRoutes from './auth/routes.js';
 import profileRoutes from './profile/routes.js';
+import driverLocationRoutes from './driver-location/routes.js';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 
@@ -11,6 +12,7 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use('/v1/auth', authRoutes);
 app.use('/v1/profile', profileRoutes);
+app.use('/v1/driver-location', driverLocationRoutes);
 
 // health
 app.get('/health', (req, res) => res.status(200).json({

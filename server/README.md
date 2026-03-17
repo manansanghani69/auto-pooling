@@ -9,6 +9,7 @@ Current scope is OTP auth plus profile management using separate `rider` and `dr
 - `src/index.js`: server entrypoint
 - `src/auth/`: auth routes, controller, service
 - `src/profile/`: profile routes, controller, service
+- `src/driver-location/`: driver location routes, controller, service
 - `src/common/db.js`: PostgreSQL connection
 - `src/common/redis.js`: Redis connection
 - `src/common/schema.sql`: database schema for rider/driver/trip tables
@@ -39,6 +40,7 @@ JWT_SECRET=supersecretkey
 JWT_EXPIRES_IN=15m
 REFRESH_TOKEN_EXPIRES_DAYS=30
 REDIS_URL=redis://localhost:6379
+DRIVER_LOCATION_TTL_SECONDS=300
 PORT=4000
 
 # OTP settings
@@ -103,6 +105,11 @@ Base path: `/v1/profile`
 - `POST /driver/create-user` - Protected route; create/complete driver profile (driver token only)
 - `POST|PATCH /driver/edit-user` - Protected route; edit driver profile (driver token only)
 - `POST|PATCH /driver/verify-document` - Protected route; upload required driver docs and mark onboarding as `documents_uploaded`
+
+Base path: `/v1/driver-location`
+
+- `PATCH /` - Protected route; update authenticated driver location (`driver` token only)
+- `GET /:driverId` - Protected route; fetch current location for a driver (Redis-first, DB fallback)
 
 Health check: `GET /health`
 
@@ -175,6 +182,22 @@ curl -X PATCH http://localhost:4000/v1/profile/driver/verify-document \
   -H "Authorization: Bearer <driverAccessToken>" \
   -H "Content-Type: application/json" \
   -d '{"vehical_photo":"https://example.com/car.jpg","driving_license_photo":"https://example.com/license.jpg","vehical_rc_photo":"https://example.com/rc.jpg"}'
+```
+
+Update driver location:
+
+```bash
+curl -X PATCH http://localhost:4000/v1/driver-location \
+  -H "Authorization: Bearer <driverAccessToken>" \
+  -H "Content-Type: application/json" \
+  -d '{"location":"23.0225,72.5714"}'
+```
+
+Get driver location:
+
+```bash
+curl -H "Authorization: Bearer <accessToken>" \
+  http://localhost:4000/v1/driver-location/<driverId>
 ```
 
 Legacy profile update:
