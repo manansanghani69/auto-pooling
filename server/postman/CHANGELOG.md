@@ -1,3 +1,8 @@
+## [1.1.0] — 2026-03-14
+### Changed
+- `PATCH /v1/driver-location` — added driver location update endpoint (Redis cache + DB persistence).
+- `GET /v1/driver-location/:driverId` — added driver location fetch endpoint with cache-first read.
+
 ## [1.0.0] — 2026-03-12
 ### Changed
 - `GET /health` — added request and response examples.
