@@ -1,4 +1,3 @@
-version: '3.8'
 services:
   postgres:
     image: postgres:15
@@ -13,12 +12,23 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
-  redis:
+  auth-redis:
     image: redis:7
-    container_name: autopool_redis
+    container_name: autopool_auth_redis
     restart: always
     ports:
-      - "6379:6379"
+      - "6380:6379"
+    volumes:
+      - auth_redis_data:/data
+
+  driver-location-redis:
+    image: redis:7
+    container_name: autopool_driver_location_redis
+    restart: always
+    ports:
+      - "6381:6379"
+    volumes:
+      - driver_location_redis_data:/data
 
   cloudbeaver:
     image: dbeaver/cloudbeaver:latest
@@ -33,4 +43,7 @@ services:
 
 volumes:
   postgres_data:
+  auth_redis_data:
+  profile_redis_data:
+  driver_location_redis_data:
   cloudbeaver_data:

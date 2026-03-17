@@ -1,19 +1,15 @@
-# Autopooling Backend (Server)
+# Autopooling Backend (Microservices)
 
-Node.js/Express API backed by PostgreSQL and Redis.
-Current scope is OTP auth plus profile management using separate `rider` and `driver` tables.
+This repository now exposes the backend as three deployable Express services backed by one shared PostgreSQL database and isolated Redis instances per service.
 
 ## Project Contents
 
-- `src/app.js`: Express app setup and route wiring
-- `src/index.js`: server entrypoint
-- `src/auth/`: auth routes, controller, service
-- `src/profile/`: profile routes, controller, service
-- `src/driver-location/`: driver location routes, controller, service
-- `src/common/db.js`: PostgreSQL connection
-- `src/common/redis.js`: Redis connection
+- `auth/`: auth microservice on port `4001`, Redis on `6380`
+- `profile/`: profile microservice on port `4002`, reserved Redis on `6381`
+- `driver-location/`: driver-location microservice on port `4003`, Redis on `6382`
+- `src/`: legacy compatibility entrypoint that re-exports the new service modules
 - `src/common/schema.sql`: database schema for rider/driver/trip tables
-- `docker-compose.yml`: local Postgres + Redis
+- `docker-compose.yml`: local Postgres + dedicated Redis containers for each service
 
 ## Prerequisites
 
@@ -22,34 +18,13 @@ Current scope is OTP auth plus profile management using separate `rider` and `dr
 
 ## Setup
 
-1) Start Postgres and Redis
+1) Start Postgres and the per-service Redis instances
 
 ```bash
 docker compose up -d
 ```
 
-2) Create `.env`
-
-```env
-DB_HOST=localhost
-DB_PORT=5432
-DB_USER=autopool_user
-DB_PASS=autopool_pass
-DB_NAME=autopool_db
-JWT_SECRET=supersecretkey
-JWT_EXPIRES_IN=15m
-REFRESH_TOKEN_EXPIRES_DAYS=30
-REDIS_URL=redis://localhost:6379
-DRIVER_LOCATION_TTL_SECONDS=300
-PORT=4000
-
-# OTP settings
-OTP_TTL_SECONDS=300
-OTP_DIGITS=4
-OTP_RETURN_IN_RESPONSE=true
-```
-
-3) Create/Update DB tables
+2) Create or update the shared database schema
 
 ```bash
 docker exec -i autopool_postgres psql -U autopool_user -d autopool_db < src/common/schema.sql
@@ -62,19 +37,33 @@ This creates:
 - `active_trips`
 - `active_requested_trips`
 
-4) Install dependencies
+3) Install dependencies for each service you want to run
 
 ```bash
-npm install
+cd auth && npm install
+cd ../profile && npm install
+cd ../driver-location && npm install
 ```
 
-5) Run the server
+4) Start each service in its own terminal
 
 ```bash
-npm start
+npm run start:auth
+npm run start:profile
+npm run start:driver-location
 ```
 
-The API listens on `http://localhost:4000` by default.
+Service base URLs:
+
+- Auth: `http://localhost:4001`
+- Profile: `http://localhost:4002`
+- Driver location: `http://localhost:4003`
+
+Redis ports:
+
+- Auth Redis: `redis://localhost:6380`
+- Profile Redis: `redis://localhost:6381`
+- Driver-location Redis: `redis://localhost:6382`
 
 ## Database Schema
 
@@ -88,6 +77,7 @@ The API listens on `http://localhost:4000` by default.
 
 ## API Overview
 
+Auth service base URL: `http://localhost:4001`
 Base path: `/v1/auth`
 
 - `POST /request-otp` - Request OTP (`phone` or `phone_no`)
@@ -96,6 +86,7 @@ Base path: `/v1/auth`
 - `POST /logout` - Revoke refresh token
 - `DELETE /delete/user` - Protected route; deletes authenticated user
 
+Profile service base URL: `http://localhost:4002`
 Base path: `/v1/profile`
 
 - `GET /` - Protected route; returns current rider/driver profile
@@ -106,6 +97,7 @@ Base path: `/v1/profile`
 - `POST|PATCH /driver/edit-user` - Protected route; edit driver profile (driver token only)
 - `POST|PATCH /driver/verify-document` - Protected route; upload required driver docs and mark onboarding as `documents_uploaded`
 
+Driver-location service base URL: `http://localhost:4003`
 Base path: `/v1/driver-location`
 
 - `PATCH /` - Protected route; update authenticated driver location (`driver` token only)
@@ -129,7 +121,7 @@ Notes:
 Request OTP:
 
 ```bash
-curl -X POST http://localhost:4000/v1/auth/request-otp \
+curl -X POST http://localhost:4001/v1/auth/request-otp \
   -H "Content-Type: application/json" \
   -d '{"phone":"9999999999"}'
 ```
@@ -137,7 +129,7 @@ curl -X POST http://localhost:4000/v1/auth/request-otp \
 Verify OTP (new rider):
 
 ```bash
-curl -X POST http://localhost:4000/v1/auth/verify-otp \
+curl -X POST http://localhost:4001/v1/auth/verify-otp \
   -H "Content-Type: application/json" \
   -d '{"phone":"9999999999","otp":"1234","name":"Manan","role":"rider"}'
 ```
@@ -145,7 +137,7 @@ curl -X POST http://localhost:4000/v1/auth/verify-otp \
 Refresh token:
 
 ```bash
-curl -X POST http://localhost:4000/v1/auth/refresh \
+curl -X POST http://localhost:4001/v1/auth/refresh \
   -H "Content-Type: application/json" \
   -d '{"refreshToken":"<token>"}'
 ```
@@ -154,13 +146,13 @@ Access protected route:
 
 ```bash
 curl -H "Authorization: Bearer <accessToken>" \
-  http://localhost:4000/v1/profile
+  http://localhost:4002/v1/profile
 ```
 
 Create rider profile:
 
 ```bash
-curl -X POST http://localhost:4000/v1/profile/rider/create-user \
+curl -X POST http://localhost:4002/v1/profile/rider/create-user \
   -H "Authorization: Bearer <riderAccessToken>" \
   -H "Content-Type: application/json" \
   -d '{"name":"Manan Sanghani","email":"manan@example.com","gender":"male"}'
@@ -169,7 +161,7 @@ curl -X POST http://localhost:4000/v1/profile/rider/create-user \
 Edit driver profile:
 
 ```bash
-curl -X PATCH http://localhost:4000/v1/profile/driver/edit-user \
+curl -X PATCH http://localhost:4002/v1/profile/driver/edit-user \
   -H "Authorization: Bearer <driverAccessToken>" \
   -H "Content-Type: application/json" \
   -d '{"name":"Driver One","residentail_address":"Ahmedabad","vehical_type":"SUV","vehical_registration_no":"GJ01AB1234","passenger_capacity":4}'
@@ -178,7 +170,7 @@ curl -X PATCH http://localhost:4000/v1/profile/driver/edit-user \
 Verify driver documents:
 
 ```bash
-curl -X PATCH http://localhost:4000/v1/profile/driver/verify-document \
+curl -X PATCH http://localhost:4002/v1/profile/driver/verify-document \
   -H "Authorization: Bearer <driverAccessToken>" \
   -H "Content-Type: application/json" \
   -d '{"vehical_photo":"https://example.com/car.jpg","driving_license_photo":"https://example.com/license.jpg","vehical_rc_photo":"https://example.com/rc.jpg"}'
@@ -187,7 +179,7 @@ curl -X PATCH http://localhost:4000/v1/profile/driver/verify-document \
 Update driver location:
 
 ```bash
-curl -X PATCH http://localhost:4000/v1/driver-location \
+curl -X PATCH http://localhost:4003/v1/driver-location \
   -H "Authorization: Bearer <driverAccessToken>" \
   -H "Content-Type: application/json" \
   -d '{"location":"23.0225,72.5714"}'
@@ -197,13 +189,13 @@ Get driver location:
 
 ```bash
 curl -H "Authorization: Bearer <accessToken>" \
-  http://localhost:4000/v1/driver-location/<driverId>
+  http://localhost:4003/v1/driver-location/<driverId>
 ```
 
 Legacy profile update:
 
 ```bash
-curl -X PATCH http://localhost:4000/v1/profile \
+curl -X PATCH http://localhost:4002/v1/profile \
   -H "Authorization: Bearer <accessToken>" \
   -H "Content-Type: application/json" \
   -d '{"name":"Manan Sanghani","email":"manan@example.com","photo_link":"https://example.com/me.jpg","gender":"male"}'
@@ -212,12 +204,14 @@ curl -X PATCH http://localhost:4000/v1/profile \
 Logout:
 
 ```bash
-curl -X POST http://localhost:4000/v1/auth/logout \
+curl -X POST http://localhost:4001/v1/auth/logout \
   -H "Content-Type: application/json" \
   -d '{"refreshToken":"<token>"}'
 ```
 
 ## Notes
 
-- Current API implementation uses rider/driver profile + auth only.
+- Each service now has its own local `.env` and isolated Redis URL.
+- `profile/.env` points to a separate Redis instance for future service-local caching, even though the current profile code does not use Redis yet.
+- `src/` remains available as a legacy compatibility layer while clients move to the dedicated service ports.
 - Trip-related tables are created but trip APIs are not yet implemented.
