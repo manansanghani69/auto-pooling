@@ -2,16 +2,31 @@ import { z } from 'zod';
 import * as driverLocationService from './service.js';
 import { normalizeRole, USER_ROLES } from '../common/userColumns.js';
 
+function isFiniteNumberString(value) {
+  return Number.isFinite(Number(value));
+}
+
+function isNumberStringInRange(value, minimum, maximum) {
+  const numericValue = Number(value);
+  return numericValue >= minimum && numericValue <= maximum;
+}
+
+function createCoordinateSchema(fieldName, minimum, maximum) {
+  return z
+    .string()
+    .trim()
+    .min(1, `${fieldName} is required`)
+    .refine(isFiniteNumberString, `${fieldName} must be a valid number`)
+    .refine(
+      (value) => isNumberStringInRange(value, minimum, maximum),
+      `${fieldName} is out of range`
+    );
+}
+
 const UPDATE_DRIVER_LOCATION_SCHEMA = z
   .object({
-    longitude: z.string().trim().min(1, 'longitude is required').max(255, 'longitude is too long'),
-    latitude: z.string().trim().min(1, 'latitude is required').max(255, 'latitude is too long'),
-  })
-  .strict();
-
-const DRIVER_ID_PARAMS_SCHEMA = z
-  .object({
-    driverId: z.string().uuid('driverId must be a valid UUID'),
+    longitude: createCoordinateSchema('longitude', -180, 180),
+    latitude: createCoordinateSchema('latitude', -90, 90),
   })
   .strict();
 
@@ -77,20 +92,3 @@ export async function updateDriverLocation(req, res) {
     return sendServerError(res, error);
   }
 }
-
-// export async function getDriverLocation(req, res) {
-//   try {
-//     const authContext = getAuthContext(req);
-//     if (!authContext.driverId || !authContext.role) return sendError(res, 401, 'unauthorized');
-
-//     const parsedParams = DRIVER_ID_PARAMS_SCHEMA.safeParse(req.params ?? {});
-//     if (!parsedParams.success) return sendValidationError(res, parsedParams.error);
-
-//     const driverLocation = await driverLocationService.getDriverLocation(parsedParams.data.driverId);
-//     if (!driverLocation) return sendError(res, 404, 'driver location not found');
-
-//     return sendSuccess(res, 200, { driverLocation });
-//   } catch (error) {
-//     return sendServerError(res, error);
-//   }
-// }

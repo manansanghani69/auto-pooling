@@ -1,17 +1,40 @@
-import {z} from 'zod';
+import { z } from 'zod';
 import * as requestTripService from './service.js';
 import { normalizeRole } from '../common/userColumns.js';
 
+function isFiniteNumberString(value) {
+  return Number.isFinite(Number(value));
+}
+
+function isNumberStringInRange(value, minimum, maximum) {
+  const numericValue = Number(value);
+  return numericValue >= minimum && numericValue <= maximum;
+}
+
+function createCoordinateSchema(fieldName, minimum, maximum) {
+  return z
+    .string()
+    .trim()
+    .min(1, `${fieldName} is required`)
+    .refine(isFiniteNumberString, `${fieldName} must be a valid number`)
+    .refine(
+      (value) => isNumberStringInRange(value, minimum, maximum),
+      `${fieldName} is out of range`
+    );
+}
+
 const UPDATE_RIDE_REQUEST_SCHEMA = z
   .object({
-    pickupLocation: z.string().trim().min(1, 'pickupLocation is required').max(255, 'pickupLocation is too long'),
-    dropoffLocation: z.string().trim().min(1, 'dropoffLocation is required').max(255, 'dropoffLocation is too long'),
+    pickupLongitude: createCoordinateSchema('pickupLongitude', -180, 180),
+    pickupLatitude: createCoordinateSchema('pickupLatitude', -90, 90),
+    dropoffLongitude: createCoordinateSchema('dropoffLongitude', -180, 180),
+    dropoffLatitude: createCoordinateSchema('dropoffLatitude', -90, 90),
   })
   .strict();
 
 const ACCEPT_RIDE_QUERY_SCHEMA = z
   .object({
-    rideRequestId: z.string().uuid('rideRequestId must be a valid UUID'),
+    rideRequestId: z.uuid('rideRequestId must be a valid UUID'),
   })
   .strict();
 
@@ -37,6 +60,9 @@ function sendError(res, status, message, details) {
 
 function sendServerError(res, error) {
     console.error(error);
+    if (error?.code === 'DRIVER_LOCATION_UNAVAILABLE') {
+        return sendError(res, 503, 'driver-location service unavailable');
+    }
     return sendError(res, 500, 'server error');
 }
 
@@ -67,8 +93,12 @@ export async function requestRide(req, res) {
         if (!parseResult.success) {
             return sendValidationError(res, parseResult.error);
         }
-        const { pickupLocation, dropoffLocation } = parseResult.data;
-        const rideRequest = await requestTripService.requestRide(authContext.userId, pickupLocation, dropoffLocation);
+        const { pickupLongitude, pickupLatitude, dropoffLongitude, dropoffLatitude } = parseResult.data;
+        const rideRequest = await requestTripService.requestRide({
+            userId: authContext.userId,
+            pickupLocation: { longitude: pickupLongitude, latitude: pickupLatitude },
+            dropoffLocation: { longitude: dropoffLongitude, latitude: dropoffLatitude },
+        });
         return sendSuccess(res, 200, rideRequest);
     } catch (error) {
         return sendServerError(res, error);

@@ -5,6 +5,5 @@ import { requireAuth } from '../common/authMiddleware.js';
 const router = express.Router();
 
 router.patch('/', requireAuth, controller.updateDriverLocation);
-// router.get('/:driverId', requireAuth, controller.getDriverLocation);
 
 export default router;

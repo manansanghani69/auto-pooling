@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package DriverLocation;
+
+service DriverLocation {
+  rpc FindNearByDrivers (UserLocation) returns (NearByDrivers);
+}
+
+message UserLocation {
+    string pickUpLongitude = 1;
+    string pickUpLatitude = 2;
+    string radius = 3;
+}
+
+message NearByDrivers {
+    repeated DriversWithLocation drivers = 1;
+}
+
+message DriversWithLocation {
+    string driverId = 1;
+    string longitute = 2;
+    string latitude = 3;
+}

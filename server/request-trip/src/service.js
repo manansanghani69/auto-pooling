@@ -1,5 +1,6 @@
 import dotenv from 'dotenv';
 import { redisClient } from '../common/redis.js';
+import { findNearbyDrivers } from '../grpc/driver-location-client.js';
 
 dotenv.config({ path: new URL('../.env', import.meta.url), override: true });
 
@@ -43,19 +44,44 @@ async function getCachedRideRequest(tripRequestId) {
 async function setCachedRideRequest(tripRequestId, request) {
     const key = getTripRequestCacheKey(tripRequestId);
     const payload = JSON.stringify({ request });
+    const ttlSeconds = getRideRequestTtlSeconds();
     try {
-        await redisClient.set(key, payload, { EX: getRideRequestTtlSeconds() });
+        await redisClient.set(key, payload, 'EX', ttlSeconds);
     } catch (error) {
         console.error('ride request cache write failed', error);
     }
 }
 
-export async function requestRide(userId, pickupLocation, dropoffLocation) {
+function buildRideRequest({
+    tripRequestId,
+    userId,
+    pickupLocation,
+    dropoffLocation,
+    nearbyDrivers,
+}) {
+    return {
+        tripRequestId,
+        userId,
+        pickupLocation,
+        dropoffLocation,
+        nearbyDrivers,
+        status: 'pending',
+    };
+}
+
+export async function requestRide({ userId, pickupLocation, dropoffLocation }) {
     const tripRequestId = `trip-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
-    const request = { tripRequestId, userId, pickupLocation, dropoffLocation, status: 'pending' };
+    const nearbyDrivers = await findNearbyDrivers(pickupLocation);
+    const request = buildRideRequest({
+        tripRequestId,
+        userId,
+        pickupLocation,
+        dropoffLocation,
+        nearbyDrivers,
+    });
 
     await setCachedRideRequest(tripRequestId, request);
-    await publishRideRequest(request);
+    // await publishRideRequest(request);
 
     return { tripRequestId };
 }
