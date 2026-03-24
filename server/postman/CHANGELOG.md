@@ -1,3 +1,11 @@
+## [1.2.0] — 2026-03-24
+### Changed
+- `PATCH /v1/driver-location` — request body changed from `location` string to `longitude` + `latitude` coordinate fields.
+- `GET /v1/driver-location/:driverId` — removed from current HTTP API contract.
+- `PATCH /v1/request-trip/rider/request-ride` — added rider ride-request endpoint.
+- `GET /v1/request-trip/driver/accept-ride` — added driver ride-acceptance endpoint with `rideRequestId` query.
+- `DriverLocation.FindNearByDrivers` (gRPC) — added gRPC request/response reference examples in Postman.
+
 ## [1.1.0] — 2026-03-14
 ### Changed
 - `PATCH /v1/driver-location` — added driver location update endpoint (Redis cache + DB persistence).
