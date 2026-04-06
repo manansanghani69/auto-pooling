@@ -1,0 +1,55 @@
+{
+  "info": {
+    "_postman_id": "45e2c8bc-34be-4632-9206-4a0ae74f24ca",
+    "name": "Autopool Request Trip Service API",
+    "description": "Request-trip service HTTP + WebSocket event documentation.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "socket_url",
+      "value": "ws://localhost:8080"
+    },
+    {
+      "key": "auth_token",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/v1/request-trip/health"
+      }
+    },
+    {
+      "name": "WebSocket Connection (Docs)",
+      "request": {
+        "method": "GET",
+        "url": "{{socket_url}}/ws/request-trip?token={{auth_token}}",
+        "description": "Connection endpoint: ws://<gateway-host>/ws/request-trip\\nAuth options:\\n1) Query token: ?token=<jwt>\\n2) Authorization header: Bearer <jwt>\\n\\nSuccessful connection emits `connection.ready`; unauthorized users are closed with code 4401."
+      }
+    },
+    {
+      "name": "trip.request Event (Docs)",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/v1/request-trip/health",
+        "description": "Client -> Server:\\n{\\n  \"event\": \"trip.request\",\\n  \"requestId\": \"<optional-uuid>\",\\n  \"data\": {\\n    \"pickupLongitude\": \"72.5714\",\\n    \"pickupLatitude\": \"23.0225\",\\n    \"dropoffLongitude\": \"72.6120\",\\n    \"dropoffLatitude\": \"23.0456\"\\n  }\\n}\\n\\nServer -> Rider: `trip.requested`\\nServer -> Nearby drivers: `trip.request.available`"
+      }
+    },
+    {
+      "name": "trip.accept Event (Docs)",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/v1/request-trip/health",
+        "description": "Client -> Server:\\n{\\n  \"event\": \"trip.accept\",\\n  \"requestId\": \"<optional-uuid>\",\\n  \"data\": {\\n    \"tripRequestId\": \"<uuid>\"\\n  }\\n}\\n\\nServer -> Driver + Rider: `trip.accepted`\\nError case: `error` with code `TRIP_NOT_AVAILABLE`."
+      }
+    }
+  ]
+}

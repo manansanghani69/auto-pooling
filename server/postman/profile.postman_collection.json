@@ -1,0 +1,245 @@
+{
+  "info": {
+    "_postman_id": "6673a594-d0ee-4df8-a966-bf1538bab8c2",
+    "name": "Autopool Profile Service API",
+    "description": "Profile microservice endpoints.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "if (pm.request.url.toString().includes('/health')) return;",
+          "const token = pm.environment.get('auth_token');",
+          "if (token) pm.request.headers.upsert({ key: 'Authorization', value: `Bearer ${token}` });"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "auth_token",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/v1/profile/health"
+      }
+    },
+    {
+      "name": "Get Profile",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/v1/profile"
+      }
+    },
+    {
+      "name": "Update Profile",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Rider One Updated\",\n  \"email\": \"rider.updated@example.com\",\n  \"photo_link\": \"https://cdn.example.com/riders/rider-updated.jpg\",\n  \"gender\": \"male\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{base_url}}/v1/profile"
+      }
+    },
+    {
+      "name": "Create Rider User",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Rider One\",\n  \"email\": \"rider.one@example.com\",\n  \"gender\": \"male\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{base_url}}/v1/profile/rider/create-user"
+      }
+    },
+    {
+      "name": "Edit Rider User (POST)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Rider One v2\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{base_url}}/v1/profile/rider/edit-user"
+      }
+    },
+    {
+      "name": "Edit Rider User (PATCH)",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"rider.one+patch@example.com\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{base_url}}/v1/profile/rider/edit-user"
+      }
+    },
+    {
+      "name": "Create Driver User",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Driver One\",\n  \"residentail_address\": \"Satellite, Ahmedabad\",\n  \"vehical_type\": \"SUV\",\n  \"vehical_registration_no\": \"GJ01AB1234\",\n  \"passenger_capacity\": 4\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{base_url}}/v1/profile/driver/create-user"
+      }
+    },
+    {
+      "name": "Edit Driver User (POST)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"passenger_capacity\": 5\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{base_url}}/v1/profile/driver/edit-user"
+      }
+    },
+    {
+      "name": "Edit Driver User (PATCH)",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"vehical_registration_no\": \"GJ01XY9876\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{base_url}}/v1/profile/driver/edit-user"
+      }
+    },
+    {
+      "name": "Verify Driver Document (POST)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"vehical_photo\": \"https://cdn.example.com/docs/vehicle.jpg\",\n  \"driving_license_photo\": \"https://cdn.example.com/docs/license.jpg\",\n  \"vehical_rc_photo\": \"https://cdn.example.com/docs/rc.jpg\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{base_url}}/v1/profile/driver/verify-document"
+      }
+    },
+    {
+      "name": "Verify Driver Document (PATCH)",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"vehical_photo\": \"https://cdn.example.com/docs/vehicle-v2.jpg\",\n  \"driving_license_photo\": \"https://cdn.example.com/docs/license-v2.jpg\",\n  \"vehical_rc_photo\": \"https://cdn.example.com/docs/rc-v2.jpg\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{base_url}}/v1/profile/driver/verify-document"
+      }
+    }
+  ]
+}

@@ -1,0 +1,1045 @@
+{
+  "info": {
+    "_postman_id": "7b5f25f5-f5db-4c35-9d2d-b8fd506d8f40",
+    "name": "Autopool Backend - Combined API Collection",
+    "description": "Combined collection for all backend microservices: auth, profile, driver-location, and request-trip (REST + gRPC/WebSocket documentation).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "1.1.0"
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "const skipAuth = String(pm.request.headers.get('x-skip-auto-auth') || '').toLowerCase() === 'true';",
+          "if (skipAuth) {",
+          "  pm.request.headers.remove('x-skip-auto-auth');",
+          "  return;",
+          "}",
+          "",
+          "const requestUrl = pm.request.url.toString();",
+          "const authExemptPaths = [",
+          "  '/health',",
+          "  '/v1/auth/request-otp',",
+          "  '/v1/auth/verify-otp',",
+          "  '/v1/auth/refresh'",
+          "];",
+          "const isAuthExempt = authExemptPaths.some((path) => requestUrl.includes(path));",
+          "",
+          "if (!isAuthExempt) {",
+          "  const currentToken = pm.environment.get('auth_token');",
+          "  if (currentToken) {",
+          "    pm.request.headers.upsert({ key: 'Authorization', value: `Bearer ${currentToken}` });",
+          "  }",
+          "}",
+          "",
+          "const expiresAt = Number(pm.environment.get('token_expires_at') || 0);",
+          "const refreshToken = pm.environment.get('refresh_token');",
+          "const authBaseUrl = pm.environment.get('auth_base_url');",
+          "const shouldRefresh = Boolean(expiresAt && refreshToken && authBaseUrl && Date.now() >= expiresAt - 30000);",
+          "",
+          "if (shouldRefresh) {",
+          "  pm.sendRequest(",
+          "    {",
+          "      url: `${authBaseUrl}/v1/auth/refresh`,",
+          "      method: 'POST',",
+          "      header: { 'Content-Type': 'application/json' },",
+          "      body: { mode: 'raw', raw: JSON.stringify({ refreshToken }) }",
+          "    },",
+          "    (error, response) => {",
+          "      if (error || !response) return;",
+          "      if (response.code !== 200) return;",
+          "      let payload = null;",
+          "      try {",
+          "        payload = response.json();",
+          "      } catch (_) {",
+          "        return;",
+          "      }",
+          "      const tokenData = payload?.data || {};",
+          "      if (tokenData.accessToken) pm.environment.set('auth_token', tokenData.accessToken);",
+          "      if (tokenData.refreshToken) pm.environment.set('refresh_token', tokenData.refreshToken);",
+          "      const accessTokenLifetimeMs = 15 * 60 * 1000;",
+          "      pm.environment.set('token_expires_at', String(Date.now() + accessTokenLifetimeMs));",
+          "    }",
+          "  );",
+          "}"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "auth_base_url",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "profile_base_url",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "driver_location_base_url",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "request_trip_base_url",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "grpc_host",
+      "value": "localhost:50051"
+    },
+    {
+      "key": "socket_url",
+      "value": "ws://localhost:8080"
+    },
+    {
+      "key": "auth_token",
+      "value": ""
+    },
+    {
+      "key": "refresh_token",
+      "value": ""
+    },
+    {
+      "key": "token_expires_at",
+      "value": ""
+    },
+    {
+      "key": "rider_phone",
+      "value": "9999999999"
+    },
+    {
+      "key": "driver_phone",
+      "value": "8888888888"
+    },
+    {
+      "key": "gateway_base_url",
+      "value": "http://localhost:8080"
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth Service",
+      "description": "Service base URL: {{auth_base_url}}",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{auth_base_url}}/v1/auth/health",
+            "description": "Liveness check for auth service."
+          },
+          "response": [
+            {
+              "name": "200 Success",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"status\": \"success\",\n  \"code\": 200,\n  \"data\": {\n    \"ok\": true,\n    \"service\": \"auth\"\n  }\n}"
+            },
+            {
+              "name": "500 Server Error",
+              "status": "Internal Server Error",
+              "code": 500,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"status\": \"error\",\n  \"code\": 500,\n  \"data\": null,\n  \"error\": {\n    \"message\": \"server error\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Request OTP",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"{{rider_phone}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{auth_base_url}}/v1/auth/request-otp",
+            "description": "Requests OTP for login/signup. `phone_no` is also accepted."
+          },
+          "response": [
+            {
+              "name": "200 OTP Issued",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"status\": \"success\",\n  \"code\": 200,\n  \"data\": {\n    \"ok\": true,\n    \"expiresIn\": 300,\n    \"otp\": \"4821\"\n  }\n}"
+            },
+            {
+              "name": "400 Missing Phone",
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"status\": \"error\",\n  \"code\": 400,\n  \"data\": null,\n  \"error\": {\n    \"message\": \"phone required\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Verify OTP (Login / Signup)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (![200, 201].includes(pm.response.code)) return;",
+                  "let payload = null;",
+                  "try { payload = pm.response.json(); } catch (_) { return; }",
+                  "const tokens = payload?.data?.tokens;",
+                  "if (!tokens) return;",
+                  "if (tokens.accessToken) pm.environment.set('auth_token', tokens.accessToken);",
+                  "if (tokens.refreshToken) pm.environment.set('refresh_token', tokens.refreshToken);",
+                  "const expiresIn = String(tokens.expiresIn || '15m').trim();",
+                  "const durationMatch = expiresIn.match(/^(\\d+)([smhd])$/i);",
+                  "const unitToMs = { s: 1000, m: 60000, h: 3600000, d: 86400000 };",
+                  "const expiresMs = durationMatch",
+                  "  ? Number(durationMatch[1]) * unitToMs[durationMatch[2].toLowerCase()]",
+                  "  : 15 * 60 * 1000;",
+                  "pm.environment.set('token_expires_at', String(Date.now() + expiresMs));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"{{rider_phone}}\",\n  \"otp\": \"1234\",\n  \"name\": \"Rider One\",\n  \"role\": \"rider\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{auth_base_url}}/v1/auth/verify-otp",
+            "description": "Verifies OTP, creates user if not present, and returns access + refresh tokens."
+          },
+          "response": [
+            {
+              "name": "201 New User Created",
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"status\": \"success\",\n  \"code\": 201,\n  \"data\": {\n    \"user\": {\n      \"id\": \"b1548e9f-8df1-4532-b5de-c9cdf8f290c8\",\n      \"rider_id\": \"b1548e9f-8df1-4532-b5de-c9cdf8f290c8\",\n      \"role\": \"rider\",\n      \"phone_no\": \"9999999999\",\n      \"name\": \"Rider One\",\n      \"email\": null,\n      \"photo_link\": null,\n      \"gender\": null\n    },\n    \"tokens\": {\n      \"accessToken\": \"<jwt>\",\n      \"refreshToken\": \"<uuid>\",\n      \"expiresIn\": \"15m\"\n    },\n    \"isNewUser\": true\n  }\n}"
+            },
+            {
+              "name": "401 Invalid OTP",
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"status\": \"error\",\n  \"code\": 401,\n  \"data\": null,\n  \"error\": {\n    \"message\": \"invalid otp\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Refresh Access Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code !== 200) return;",
+                  "let payload = null;",
+                  "try { payload = pm.response.json(); } catch (_) { return; }",
+                  "const tokenData = payload?.data || {};",
+                  "if (tokenData.accessToken) pm.environment.set('auth_token', tokenData.accessToken);",
+                  "if (tokenData.refreshToken) pm.environment.set('refresh_token', tokenData.refreshToken);",
+                  "pm.environment.set('token_expires_at', String(Date.now() + 15 * 60 * 1000));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-skip-auto-auth",
+                "value": "true"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refresh_token}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{auth_base_url}}/v1/auth/refresh",
+            "description": "Exchanges refresh token for a new access token and rotates refresh token."
+          },
+          "response": [
+            {
+              "name": "200 Refreshed",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"status\": \"success\",\n  \"code\": 200,\n  \"data\": {\n    \"accessToken\": \"<new-jwt>\",\n    \"refreshToken\": \"<new-uuid>\"\n  }\n}"
+            },
+            {
+              "name": "401 Invalid Refresh Token",
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"status\": \"error\",\n  \"code\": 401,\n  \"data\": null,\n  \"error\": {\n    \"message\": \"invalid refresh token\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refresh_token}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{auth_base_url}}/v1/auth/logout",
+            "description": "Revokes refresh token (if provided)."
+          },
+          "response": [
+            {
+              "name": "200 Logged Out",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"status\": \"success\",\n  \"code\": 200,\n  \"data\": {\n    \"ok\": true\n  }\n}"
+            },
+            {
+              "name": "500 Server Error",
+              "status": "Internal Server Error",
+              "code": 500,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"status\": \"error\",\n  \"code\": 500,\n  \"data\": null,\n  \"error\": {\n    \"message\": \"server error\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete User Account",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"optional-fallback-id\",\n  \"role\": \"rider\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{auth_base_url}}/v1/auth/delete/user",
+            "description": "Deletes authenticated user account. User id/role are primarily resolved from JWT claims."
+          },
+          "response": [
+            {
+              "name": "200 Deleted",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"status\": \"success\",\n  \"code\": 200,\n  \"data\": {\n    \"ok\": true\n  }\n}"
+            },
+            {
+              "name": "401 Unauthorized",
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"status\": \"error\",\n  \"code\": 401,\n  \"data\": null,\n  \"error\": {\n    \"message\": \"invalid token\"\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Profile Service",
+      "description": "Service base URL: {{profile_base_url}}",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{profile_base_url}}/v1/profile/health"
+          },
+          "response": [
+            {
+              "name": "200 Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"status\": \"success\",\n  \"code\": 200,\n  \"data\": {\n    \"ok\": true,\n    \"service\": \"profile\"\n  }\n}"
+            },
+            {
+              "name": "500 Server Error",
+              "status": "Internal Server Error",
+              "code": 500,
+              "body": "{\n  \"status\": \"error\",\n  \"code\": 500,\n  \"data\": null,\n  \"error\": {\n    \"message\": \"server error\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": "{{profile_base_url}}/v1/profile",
+            "description": "Returns profile of authenticated rider/driver."
+          },
+          "response": [
+            {
+              "name": "200 Profile Found",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"status\": \"success\",\n  \"code\": 200,\n  \"data\": {\n    \"user\": {\n      \"id\": \"b1548e9f-8df1-4532-b5de-c9cdf8f290c8\",\n      \"role\": \"rider\",\n      \"phone_no\": \"9999999999\",\n      \"name\": \"Rider One\",\n      \"email\": \"rider.one@example.com\",\n      \"photo_link\": \"https://cdn.example.com/riders/rider-one.jpg\",\n      \"gender\": \"male\"\n    }\n  }\n}"
+            },
+            {
+              "name": "404 Profile Not Found",
+              "status": "Not Found",
+              "code": 404,
+              "body": "{\n  \"status\": \"error\",\n  \"code\": 404,\n  \"data\": null,\n  \"error\": {\n    \"message\": \"user not found\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Profile (Role-Aware PATCH /v1/profile)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Rider One Updated\",\n  \"email\": \"rider.updated@example.com\",\n  \"photo_link\": \"https://cdn.example.com/riders/rider-one-updated.jpg\",\n  \"gender\": \"male\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{profile_base_url}}/v1/profile"
+          },
+          "response": [
+            {
+              "name": "200 Updated",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"status\": \"success\",\n  \"code\": 200,\n  \"data\": {\n    \"user\": {\n      \"id\": \"b1548e9f-8df1-4532-b5de-c9cdf8f290c8\",\n      \"role\": \"rider\",\n      \"name\": \"Rider One Updated\",\n      \"email\": \"rider.updated@example.com\"\n    }\n  }\n}"
+            },
+            {
+              "name": "400 Validation Error",
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"status\": \"error\",\n  \"code\": 400,\n  \"data\": null,\n  \"error\": {\n    \"message\": \"email must be a valid email address\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create Rider Profile",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Rider One\",\n  \"email\": \"rider.one@example.com\",\n  \"photo_link\": \"https://cdn.example.com/riders/rider-one.jpg\",\n  \"gender\": \"male\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{profile_base_url}}/v1/profile/rider/create-user"
+          },
+          "response": [
+            {
+              "name": "200 Rider Profile Saved",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"status\": \"success\",\n  \"code\": 200,\n  \"data\": {\n    \"user\": {\n      \"id\": \"rider-uuid\",\n      \"role\": \"rider\",\n      \"name\": \"Rider One\",\n      \"email\": \"rider.one@example.com\"\n    }\n  }\n}"
+            },
+            {
+              "name": "403 Forbidden For Driver Token",
+              "status": "Forbidden",
+              "code": 403,
+              "body": "{\n  \"status\": \"error\",\n  \"code\": 403,\n  \"data\": null,\n  \"error\": {\n    \"message\": \"forbidden\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Edit Rider Profile (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Rider One v2\",\n  \"gender\": \"other\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{profile_base_url}}/v1/profile/rider/edit-user"
+          },
+          "response": [
+            {
+              "name": "200 Rider Updated",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"status\": \"success\",\n  \"code\": 200,\n  \"data\": {\n    \"user\": {\n      \"id\": \"rider-uuid\",\n      \"name\": \"Rider One v2\",\n      \"gender\": \"other\"\n    }\n  }\n}"
+            },
+            {
+              "name": "400 No Fields Provided",
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"status\": \"error\",\n  \"code\": 400,\n  \"data\": null,\n  \"error\": {\n    \"message\": \"no profile fields provided\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Edit Rider Profile (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"rider.one+patch@example.com\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{profile_base_url}}/v1/profile/rider/edit-user"
+          },
+          "response": [
+            {
+              "name": "200 Rider Updated",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"status\": \"success\",\n  \"code\": 200,\n  \"data\": {\n    \"user\": {\n      \"id\": \"rider-uuid\",\n      \"email\": \"rider.one+patch@example.com\"\n    }\n  }\n}"
+            },
+            {
+              "name": "401 Unauthorized",
+              "status": "Unauthorized",
+              "code": 401,
+              "body": "{\n  \"status\": \"error\",\n  \"code\": 401,\n  \"data\": null,\n  \"error\": {\n    \"message\": \"invalid token\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create Driver Profile",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Driver One\",\n  \"residentail_address\": \"Satellite, Ahmedabad\",\n  \"vehical_type\": \"SUV\",\n  \"vehical_registration_no\": \"GJ01AB1234\",\n  \"passenger_capacity\": 4,\n  \"email\": \"driver.one@example.com\",\n  \"gender\": \"male\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{profile_base_url}}/v1/profile/driver/create-user"
+          },
+          "response": [
+            {
+              "name": "200 Driver Profile Saved",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"status\": \"success\",\n  \"code\": 200,\n  \"data\": {\n    \"user\": {\n      \"id\": \"driver-uuid\",\n      \"role\": \"driver\",\n      \"name\": \"Driver One\",\n      \"vehical_type\": \"SUV\",\n      \"vehical_registration_no\": \"GJ01AB1234\",\n      \"passenger_capacity\": 4,\n      \"onboarding_status\": \"info_remaining\"\n    }\n  }\n}"
+            },
+            {
+              "name": "400 Missing Required Fields",
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"status\": \"error\",\n  \"code\": 400,\n  \"data\": null,\n  \"error\": {\n    \"message\": \"missing required field(s): vehical_registration_no\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Edit Driver Profile (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Driver One Updated\",\n  \"passenger_capacity\": 5,\n  \"vehical_type\": \"MUV\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{profile_base_url}}/v1/profile/driver/edit-user"
+          },
+          "response": [
+            {
+              "name": "200 Driver Updated",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"status\": \"success\",\n  \"code\": 200,\n  \"data\": {\n    \"user\": {\n      \"id\": \"driver-uuid\",\n      \"name\": \"Driver One Updated\",\n      \"passenger_capacity\": 5,\n      \"vehical_type\": \"MUV\"\n    }\n  }\n}"
+            },
+            {
+              "name": "400 Capacity Out Of Range",
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"status\": \"error\",\n  \"code\": 400,\n  \"data\": null,\n  \"error\": {\n    \"message\": \"passenger_capacity cannot be greater than 20\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Edit Driver Profile (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vehical_registration_no\": \"GJ01XY9876\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{profile_base_url}}/v1/profile/driver/edit-user"
+          },
+          "response": [
+            {
+              "name": "200 Driver Updated",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"status\": \"success\",\n  \"code\": 200,\n  \"data\": {\n    \"user\": {\n      \"id\": \"driver-uuid\",\n      \"vehical_registration_no\": \"GJ01XY9876\"\n    }\n  }\n}"
+            },
+            {
+              "name": "403 Forbidden",
+              "status": "Forbidden",
+              "code": 403,
+              "body": "{\n  \"status\": \"error\",\n  \"code\": 403,\n  \"data\": null,\n  \"error\": {\n    \"message\": \"forbidden\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Verify Driver Documents (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vehical_photo\": \"https://cdn.example.com/docs/vehicle-photo.jpg\",\n  \"driving_license_photo\": \"https://cdn.example.com/docs/license-photo.jpg\",\n  \"vehical_rc_photo\": \"https://cdn.example.com/docs/rc-photo.jpg\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{profile_base_url}}/v1/profile/driver/verify-document"
+          },
+          "response": [
+            {
+              "name": "200 Documents Uploaded",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"status\": \"success\",\n  \"code\": 200,\n  \"data\": {\n    \"user\": {\n      \"id\": \"driver-uuid\",\n      \"vehical_photo\": \"https://cdn.example.com/docs/vehicle-photo.jpg\",\n      \"driving_license_photo\": \"https://cdn.example.com/docs/license-photo.jpg\",\n      \"vehical_rc_photo\": \"https://cdn.example.com/docs/rc-photo.jpg\",\n      \"onboarding_status\": \"documents_uploaded\"\n    }\n  }\n}"
+            },
+            {
+              "name": "400 Missing Documents",
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"status\": \"error\",\n  \"code\": 400,\n  \"data\": null,\n  \"error\": {\n    \"message\": \"vehical_photo, driving_license_photo and vehical_rc_photo are required\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Verify Driver Documents (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vehical_photo\": \"https://cdn.example.com/docs/vehicle-photo-v2.jpg\",\n  \"driving_license_photo\": \"https://cdn.example.com/docs/license-photo-v2.jpg\",\n  \"vehical_rc_photo\": \"https://cdn.example.com/docs/rc-photo-v2.jpg\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{profile_base_url}}/v1/profile/driver/verify-document"
+          },
+          "response": [
+            {
+              "name": "200 Documents Updated",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"status\": \"success\",\n  \"code\": 200,\n  \"data\": {\n    \"user\": {\n      \"id\": \"driver-uuid\",\n      \"onboarding_status\": \"documents_uploaded\"\n    }\n  }\n}"
+            },
+            {
+              "name": "401 Unauthorized",
+              "status": "Unauthorized",
+              "code": 401,
+              "body": "{\n  \"status\": \"error\",\n  \"code\": 401,\n  \"data\": null,\n  \"error\": {\n    \"message\": \"missing auth header\"\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Driver Location Service",
+      "description": "Service base URL: {{driver_location_base_url}}",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{driver_location_base_url}}/v1/driver-location/health"
+          },
+          "response": [
+            {
+              "name": "200 Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"status\": \"success\",\n  \"code\": 200,\n  \"data\": {\n    \"ok\": true,\n    \"service\": \"driver-location\"\n  }\n}"
+            },
+            {
+              "name": "500 Server Error",
+              "status": "Internal Server Error",
+              "code": 500,
+              "body": "{\n  \"status\": \"error\",\n  \"code\": 500,\n  \"data\": null,\n  \"error\": {\n    \"message\": \"server error\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Driver Location",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"longitude\": \"72.5714\",\n  \"latitude\": \"23.0225\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{driver_location_base_url}}/v1/driver-location",
+            "description": "Caches authenticated driver's latest longitude/latitude in Redis geospatial index."
+          },
+          "response": [
+            {
+              "name": "200 Location Updated",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"status\": \"success\",\n  \"code\": 200,\n  \"data\": {\n    \"driverLocation\": {\n      \"driverId\": \"driver-uuid\",\n      \"longitude\": \"72.5714\",\n      \"latitude\": \"23.0225\"\n    }\n  }\n}"
+            },
+            {
+              "name": "400 Validation Error",
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"status\": \"error\",\n  \"code\": 400,\n  \"data\": null,\n  \"error\": {\n    \"message\": \"validation error\",\n    \"details\": [\n      {\n        \"field\": \"longitude\",\n        \"message\": \"longitude is out of range\"\n      }\n    ]\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Request Trip Service (HTTP)",
+      "description": "Service base URL: {{request_trip_base_url}}",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{request_trip_base_url}}/v1/request-trip/health"
+          },
+          "response": [
+            {
+              "name": "200 Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"status\": \"success\",\n  \"code\": 200,\n  \"data\": {\n    \"ok\": true,\n    \"service\": \"request-trip\"\n  }\n}"
+            },
+            {
+              "name": "500 Server Error",
+              "status": "Internal Server Error",
+              "code": 500,
+              "body": "{\n  \"status\": \"error\",\n  \"code\": 500,\n  \"data\": null,\n  \"error\": {\n    \"message\": \"server error\"\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Driver Location gRPC (Documentation)",
+      "description": "gRPC host: {{grpc_host}}",
+      "item": [
+        {
+          "name": "FindNearByDrivers (gRPC Docs)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-skip-auto-auth",
+                "value": "true"
+              }
+            ],
+            "url": "{{driver_location_base_url}}/v1/driver-location/health",
+            "description": "Service: DriverLocation.DriverLocation\\nMethod: FindNearByDrivers(UserLocation) returns (NearByDrivers)\\n\\nRequest schema:\\n{\\n  \"pickUpLongitude\": \"string\",\\n  \"pickUpLatitude\": \"string\",\\n  \"radius\": \"string\"\\n}\\n\\nResponse schema:\\n{\\n  \"drivers\": [\\n    {\\n      \"driverId\": \"string\",\\n      \"longitute\": \"string\",\\n      \"latitude\": \"string\"\\n    }\\n  ]\\n}\\n\\nExample request payload:\\n{\\n  \"pickUpLongitude\": \"72.5714\",\\n  \"pickUpLatitude\": \"23.0225\",\\n  \"radius\": \"5\"\\n}\\n\\nPostman gRPC testing:\\n1) Create a new gRPC request in Postman.\\n2) Server URL: {{grpc_host}}\\n3) Import proto: driver-location/protos/nearby_drivers.proto\\n4) Invoke DriverLocation.DriverLocation/FindNearByDrivers\\n\\ngrpcurl example:\\ngrpcurl -plaintext -import-path driver-location/protos -proto nearby_drivers.proto -d '{\"pickUpLongitude\":\"72.5714\",\"pickUpLatitude\":\"23.0225\",\"radius\":\"5\"}' {{grpc_host}} DriverLocation.DriverLocation/FindNearByDrivers"
+          },
+          "response": [
+            {
+              "name": "gRPC Success Example",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"drivers\": [\n    {\n      \"driverId\": \"driver-uuid-1\",\n      \"longitute\": \"72.5714\",\n      \"latitude\": \"23.0225\"\n    },\n    {\n      \"driverId\": \"driver-uuid-2\",\n      \"longitute\": \"72.5801\",\n      \"latitude\": \"23.0310\"\n    }\n  ]\n}"
+            },
+            {
+              "name": "gRPC INVALID_ARGUMENT Example",
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"code\": 3,\n  \"message\": \"validation error\",\n  \"details\": \"pickUpLatitude: pickUpLatitude is required\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Request Trip WebSocket (Documentation)",
+      "description": "Socket path: /ws/request-trip",
+      "item": [
+        {
+          "name": "WebSocket Connection Config",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-skip-auto-auth",
+                "value": "true"
+              }
+            ],
+            "url": "{{socket_url}}/ws/request-trip?token={{auth_token}}",
+            "description": "Handshake URL: {{socket_url}}/ws/request-trip?token={{auth_token}}\\nAlternative auth: Authorization: Bearer <access_token> header in websocket upgrade request.\\n\\nInitial server event after successful auth:\\n{\\n  \"event\": \"connection.ready\",\\n  \"data\": {\\n    \"userId\": \"<uuid>\",\\n    \"role\": \"rider|driver\",\\n    \"path\": \"/ws/request-trip\"\\n  },\\n  \"meta\": { \"requestId\": \"<uuid>\" }\\n}"
+          },
+          "response": [
+            {
+              "name": "connection.ready",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"event\": \"connection.ready\",\n  \"data\": {\n    \"userId\": \"b1548e9f-8df1-4532-b5de-c9cdf8f290c8\",\n    \"role\": \"rider\",\n    \"path\": \"/ws/request-trip\"\n  },\n  \"meta\": {\n    \"requestId\": \"7c14c0f5-8856-4430-b74e-f48beefb95ca\"\n  }\n}"
+            },
+            {
+              "name": "Unauthorized Close",
+              "status": "Unauthorized",
+              "code": 401,
+              "body": "WebSocket closed with code 4401 and reason 'Unauthorized'."
+            }
+          ]
+        },
+        {
+          "name": "trip.request Event (Client -> Server)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-skip-auto-auth",
+                "value": "true"
+              }
+            ],
+            "url": "{{request_trip_base_url}}/v1/request-trip/health",
+            "description": "Client emit payload:\\n{\\n  \"event\": \"trip.request\",\\n  \"requestId\": \"c78f6c09-bfcb-44b6-8f16-fc7a25e80f9d\",\\n  \"data\": {\\n    \"pickupLongitude\": \"72.5714\",\\n    \"pickupLatitude\": \"23.0225\",\\n    \"dropoffLongitude\": \"72.6120\",\\n    \"dropoffLatitude\": \"23.0456\"\\n  }\\n}\\n\\nServer emits to rider:\\n- trip.requested\\nServer emits to nearby drivers:\\n- trip.request.available"
+          },
+          "response": [
+            {
+              "name": "trip.requested (to rider)",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"event\": \"trip.requested\",\n  \"data\": {\n    \"tripRequestId\": \"f281fe2e-4f7c-4530-8cf6-8925a637f670\",\n    \"nearbyDriverCount\": 2,\n    \"status\": \"requested\"\n  },\n  \"meta\": {\n    \"requestId\": \"c78f6c09-bfcb-44b6-8f16-fc7a25e80f9d\"\n  }\n}"
+            },
+            {
+              "name": "error VALIDATION_ERROR",
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"event\": \"error\",\n  \"error\": {\n    \"code\": \"VALIDATION_ERROR\",\n    \"message\": \"validation error\",\n    \"details\": [\n      {\n        \"field\": \"data.pickupLongitude\",\n        \"message\": \"pickupLongitude is required\"\n      }\n    ]\n  },\n  \"meta\": {\n    \"requestId\": \"c78f6c09-bfcb-44b6-8f16-fc7a25e80f9d\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "trip.accept Event (Client -> Server)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-skip-auto-auth",
+                "value": "true"
+              }
+            ],
+            "url": "{{request_trip_base_url}}/v1/request-trip/health",
+            "description": "Client emit payload:\\n{\\n  \"event\": \"trip.accept\",\\n  \"requestId\": \"5b0737f9-ff0a-46fc-96ad-2f8394c2cfce\",\\n  \"data\": {\\n    \"tripRequestId\": \"f281fe2e-4f7c-4530-8cf6-8925a637f670\"\\n  }\\n}\\n\\nServer emits:\\n- trip.accepted to driver\\n- trip.accepted to rider"
+          },
+          "response": [
+            {
+              "name": "trip.accepted",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"event\": \"trip.accepted\",\n  \"data\": {\n    \"tripRequestId\": \"f281fe2e-4f7c-4530-8cf6-8925a637f670\",\n    \"riderId\": \"rider-uuid\",\n    \"driverId\": \"driver-uuid\",\n    \"pickupLocation\": {\n      \"longitude\": \"72.5714\",\n      \"latitude\": \"23.0225\"\n    },\n    \"dropoffLocation\": {\n      \"longitude\": \"72.6120\",\n      \"latitude\": \"23.0456\"\n    },\n    \"status\": \"active\",\n    \"requestedAt\": \"2026-03-25T12:00:00.000Z\",\n    \"acceptedAt\": \"2026-03-25T12:00:15.000Z\"\n  },\n  \"meta\": {\n    \"requestId\": \"5b0737f9-ff0a-46fc-96ad-2f8394c2cfce\"\n  }\n}"
+            },
+            {
+              "name": "error TRIP_NOT_AVAILABLE",
+              "status": "Conflict",
+              "code": 409,
+              "body": "{\n  \"event\": \"error\",\n  \"error\": {\n    \"code\": \"TRIP_NOT_AVAILABLE\",\n    \"message\": \"trip request not found or already accepted\"\n  },\n  \"meta\": {\n    \"requestId\": \"5b0737f9-ff0a-46fc-96ad-2f8394c2cfce\"\n  }\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,183 @@
+{
+  "info": {
+    "_postman_id": "f6ca3a51-8b4b-4307-8956-5695fdbfca5a",
+    "name": "Autopool Auth Service API",
+    "description": "Auth microservice endpoints.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "const requestUrl = pm.request.url.toString();",
+          "const skipAuthPaths = ['/health', '/request-otp', '/verify-otp', '/refresh'];",
+          "if (skipAuthPaths.some((path) => requestUrl.includes(path))) return;",
+          "const token = pm.environment.get('auth_token');",
+          "if (token) pm.request.headers.upsert({ key: 'Authorization', value: `Bearer ${token}` });"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "auth_token",
+      "value": ""
+    },
+    {
+      "key": "refresh_token",
+      "value": ""
+    },
+    {
+      "key": "rider_phone",
+      "value": "9999999999"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/v1/auth/health"
+      }
+    },
+    {
+      "name": "Request OTP",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"phone\": \"{{rider_phone}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{base_url}}/v1/auth/request-otp"
+      }
+    },
+    {
+      "name": "Verify OTP",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (![200, 201].includes(pm.response.code)) return;",
+              "let payload = null;",
+              "try { payload = pm.response.json(); } catch (_) { return; }",
+              "const tokens = payload?.data?.tokens;",
+              "if (!tokens) return;",
+              "if (tokens.accessToken) pm.environment.set('auth_token', tokens.accessToken);",
+              "if (tokens.refreshToken) pm.environment.set('refresh_token', tokens.refreshToken);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"phone\": \"{{rider_phone}}\",\n  \"otp\": \"1234\",\n  \"name\": \"Rider One\",\n  \"role\": \"rider\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{base_url}}/v1/auth/verify-otp"
+      }
+    },
+    {
+      "name": "Refresh Token",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code !== 200) return;",
+              "let payload = null;",
+              "try { payload = pm.response.json(); } catch (_) { return; }",
+              "if (payload?.data?.accessToken) pm.environment.set('auth_token', payload.data.accessToken);",
+              "if (payload?.data?.refreshToken) pm.environment.set('refresh_token', payload.data.refreshToken);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"refreshToken\": \"{{refresh_token}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{base_url}}/v1/auth/refresh"
+      }
+    },
+    {
+      "name": "Logout",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"refreshToken\": \"{{refresh_token}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{base_url}}/v1/auth/logout"
+      }
+    },
+    {
+      "name": "Delete Account",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{auth_token}}"
+          }
+        ],
+        "url": "{{base_url}}/v1/auth/delete/user"
+      }
+    }
+  ]
+}
