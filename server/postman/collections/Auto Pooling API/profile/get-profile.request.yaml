@@ -1,8 +1,0 @@
-$kind: http-request
-name: 'get profile'
-method: GET
-url: '{{baseUrl}}/v1/profile'
-order: 1000
-headers:
-  - key: Authorization
-    value: 'Bearer {{accessToken}}'
