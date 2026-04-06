@@ -1,0 +1,17 @@
+{
+  "@@locale": "en",
+  "appTitle": "Auto Pooling Driver",
+  "homeTitle": "Auto Pooling",
+  "homeHeadline": "Your driver dashboard is ready.",
+  "homeSubtitle": "State management, routing, theming, assets, and code generation are wired into the project baseline.",
+  "homeLoading": "Loading dashboard summary...",
+  "homeErrorTitle": "Unable to load your dashboard",
+  "homeErrorDescription": "Try again in a moment.",
+  "homeRetryAction": "Retry",
+  "homeRefreshAction": "Refresh summary",
+  "homeActiveTrips": "Active trips",
+  "homeCompletedTrips": "Completed today",
+  "homeTodayEarnings": "Today's earnings",
+  "homeCacheFailure": "Local dashboard data is unavailable right now.",
+  "homeUnexpectedFailure": "Something went wrong while loading the dashboard."
+}
