@@ -30,6 +30,15 @@ services:
     volumes:
       - driver_location_redis_data:/data
 
+  request-trip-redis:
+    image: redis:7
+    container_name: autopool_request_trip_redis
+    restart: always
+    ports:
+      - "6382:6379"
+    volumes:
+      - request_trip_redis_data:/data
+
   cloudbeaver:
     image: dbeaver/cloudbeaver:latest
     container_name: autopool_cloudbeaver
@@ -46,4 +55,5 @@ volumes:
   auth_redis_data:
   profile_redis_data:
   driver_location_redis_data:
+  request_trip_redis_data:
   cloudbeaver_data:

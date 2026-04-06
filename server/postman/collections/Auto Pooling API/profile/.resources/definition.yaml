@@ -1,6 +1,0 @@
-$kind: collection
-name: profile
-description: |-
-  User profile management endpoints.
-  All endpoints require Bearer token authentication.
-order: 2000

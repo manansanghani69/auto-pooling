@@ -146,7 +146,7 @@ export async function findUserByPhone(phoneNo, role) {
 export async function requestOtp(phoneNo) {
   const otp = generateOtp();
   const ttlSeconds = resolveOtpTtlSeconds();
-  await redisClient.set(otpKey(phoneNo), otp, { EX: ttlSeconds });
+  await redisClient.set(otpKey(phoneNo), otp, 'EX', ttlSeconds);
   return { otp, expiresIn: ttlSeconds };
 }
 
@@ -169,10 +169,14 @@ export async function verifyOtp(phoneNo, otp) {
 export async function issueTokens(user) {
   const accessToken = signAccessToken({ sub: user.id, role: user.role });
   const refreshToken = signRefreshToken();
+  const refreshTokenTtlSeconds = REFRESH_DAYS * 24 * 60 * 60;
 
-  await redisClient.set(refreshTokenKey(refreshToken), serializeRefreshTokenState(user), {
-    EX: REFRESH_DAYS * 24 * 60 * 60,
-  });
+  await redisClient.set(
+    refreshTokenKey(refreshToken),
+    serializeRefreshTokenState(user),
+    'EX',
+    refreshTokenTtlSeconds
+  );
 
   return { accessToken, refreshToken, expiresIn: ACCESS_EXPIRES };
 }
@@ -198,13 +202,13 @@ export async function refreshAccessToken(refreshToken) {
 
   await redisClient.del(key);
   const newRefreshToken = signRefreshToken();
+  const refreshTokenTtlSeconds = REFRESH_DAYS * 24 * 60 * 60;
 
   await redisClient.set(
     refreshTokenKey(newRefreshToken),
     serializeRefreshTokenState(user),
-    {
-      EX: REFRESH_DAYS * 24 * 60 * 60,
-    }
+    'EX',
+    refreshTokenTtlSeconds
   );
 
   const accessToken = signAccessToken({ sub: user.id, role: user.role });

@@ -7,7 +7,7 @@ CREATE TABLE rider (
     rider_id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::TEXT,
     phone_no TEXT UNIQUE NOT NULL,
     name TEXT NOT NULL,
-    email TEXT UNIQUE NOT NULL,
+    email TEXT,
     photo_link TEXT,
     gender gender
 );
