@@ -1,0 +1,28 @@
+$kind: http-request
+name: Profile / Verify Driver Document (PATCH)
+description: >-
+  Uploads the required driver documents using the PATCH variant and advances
+  onboarding.
+
+
+  - Requires a driver bearer token.
+
+  - All three fields are required in the same request: `vehical_photo`,
+  `driving_license_photo`, and `vehical_rc_photo`.
+
+  - On success, the server sets `onboarding_status` to `documents_uploaded`.
+url: "{{baseUrl}}/v1/profile/driver/verify-document"
+method: PATCH
+headers:
+  Authorization: Bearer {{driverAccessToken}}
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "vehical_photo": "https://example.com/car.jpg",
+      "driving_license_photo": "https://example.com/license.jpg",
+      "vehical_rc_photo": "https://example.com/rc.jpg"
+    }
+examples: ./.resources/Profile - Verify Driver Document (PATCH).resources/examples
+order: 16000

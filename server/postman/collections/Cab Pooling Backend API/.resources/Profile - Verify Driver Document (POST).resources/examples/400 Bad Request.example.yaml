@@ -1,0 +1,32 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/v1/profile/driver/verify-document"
+  method: POST
+  headers:
+    Authorization: Bearer {{driverAccessToken}}
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "vehical_photo": "https://example.com/car.jpg",
+        "driving_license_photo": "https://example.com/license.jpg",
+        "vehical_rc_photo": "https://example.com/rc.jpg"
+      }
+response:
+  statusCode: 400
+  statusText: Bad Request
+  headers:
+    Content-Type: application/json
+  body:
+    type: text
+    content: >-
+      {
+        "status": "error",
+        "code": 400,
+        "data": null,
+        "error": {
+          "message": "vehical_photo, driving_license_photo and vehical_rc_photo are required"
+        }
+      }
+order: 2000

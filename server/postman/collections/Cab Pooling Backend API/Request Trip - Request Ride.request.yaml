@@ -1,0 +1,24 @@
+$kind: http-request
+name: Request Trip / Request Ride
+description: |-
+  Creates a ride request for an authenticated rider.
+
+  - Requires a rider bearer token.
+  - Validates pickup and dropoff coordinates.
+  - Returns a `tripRequestId` that can be used by drivers to accept the ride.
+url: "{{baseUrl}}/v1/request-trip/rider/request-ride"
+method: PATCH
+headers:
+  Authorization: Bearer {{riderAccessToken}}
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "pickupLongitude": "72.5714",
+      "pickupLatitude": "23.0225",
+      "dropoffLongitude": "72.6290",
+      "dropoffLatitude": "23.0657"
+    }
+examples: ./.resources/Request Trip - Request Ride.resources/examples
+order: 18000

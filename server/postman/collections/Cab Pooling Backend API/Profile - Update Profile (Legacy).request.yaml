@@ -1,0 +1,30 @@
+$kind: http-request
+name: Profile / Update Profile (Legacy)
+description: >-
+  Legacy partial profile update route kept for compatibility.
+
+
+  - Accepts common profile fields such as `name`, `email`, `photo_link`, and
+  `gender`.
+
+  - Driver tokens can also update driver-specific fields supported by the
+  controller.
+
+  - Do not send `onboarding_status`; that field is controlled by the document
+  verification endpoint.
+url: "{{baseUrl}}/v1/profile"
+method: PATCH
+headers:
+  Authorization: Bearer {{accessToken}}
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "name": "Updated Name",
+      "email": "updated@example.com",
+      "photo_link": "https://example.com/profile.jpg",
+      "gender": "male"
+    }
+examples: ./.resources/Profile - Update Profile (Legacy).resources/examples
+order: 8000

@@ -1,0 +1,10 @@
+$kind: http-request
+name: Health / Health Check
+description: |-
+  Returns a simple success payload to confirm the API is running.
+
+  Authentication is not required.
+url: "{{baseUrl}}/health"
+method: GET
+examples: ./.resources/Health - Health Check.resources/examples
+order: 1000

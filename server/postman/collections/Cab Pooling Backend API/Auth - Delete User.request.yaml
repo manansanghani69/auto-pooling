@@ -1,0 +1,13 @@
+$kind: http-request
+name: Auth / Delete User
+description: |-
+  Deletes the authenticated rider or driver account tied to the bearer token.
+
+  - Requires `Authorization: Bearer {{accessToken}}`.
+  - Returns `404` when the authenticated user record no longer exists.
+url: "{{baseUrl}}/v1/auth/delete/user"
+method: DELETE
+headers:
+  Authorization: Bearer {{accessToken}}
+examples: ./.resources/Auth - Delete User.resources/examples
+order: 6000

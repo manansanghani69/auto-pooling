@@ -1,0 +1,26 @@
+$kind: http-request
+name: Profile / Edit Driver User (PATCH)
+description: >-
+  Updates driver profile fields using the PATCH variant.
+
+
+  - Requires a driver bearer token.
+
+  - Supports partial updates to driver profile fields and optional document
+  URLs.
+
+  - Do not send `onboarding_status` directly.
+url: "{{baseUrl}}/v1/profile/driver/edit-user"
+method: PATCH
+headers:
+  Authorization: Bearer {{driverAccessToken}}
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "vehical_type": "Sedan",
+      "passenger_capacity": 3
+    }
+examples: ./.resources/Profile - Edit Driver User (PATCH).resources/examples
+order: 14000

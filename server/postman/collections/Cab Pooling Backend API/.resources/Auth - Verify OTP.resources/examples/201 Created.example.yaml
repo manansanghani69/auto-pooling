@@ -1,0 +1,46 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/v1/auth/verify-otp"
+  method: POST
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "phone": "{{phone}}",
+        "otp": "{{otp}}",
+        "name": "Test Rider",
+        "role": "rider"
+      }
+response:
+  statusCode: 201
+  statusText: Created
+  headers:
+    Content-Type: application/json
+  body:
+    type: text
+    content: |-
+      {
+        "status": "success",
+        "code": 201,
+        "data": {
+          "user": {
+            "id": "b3f2dd85-4f20-4762-ac9a-54f875e5cf2b",
+            "rider_id": "b3f2dd85-4f20-4762-ac9a-54f875e5cf2b",
+            "role": "rider",
+            "phone_no": "9999999999",
+            "name": "Test Rider",
+            "email": null,
+            "photo_link": null,
+            "gender": null
+          },
+          "tokens": {
+            "accessToken": "<jwt>",
+            "refreshToken": "<refresh-token>",
+            "expiresIn": "15m"
+          },
+          "isNewUser": true
+        }
+      }
+order: 1000

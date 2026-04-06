@@ -1,0 +1,18 @@
+$kind: http-request
+name: Driver Location gRPC / FindNearByDrivers
+description: >-
+  gRPC endpoint on driver-location service used by request-trip for nearby
+  driver discovery.
+
+
+  Service: `DriverLocation`
+
+  Method: `FindNearByDrivers`
+
+  Address: `127.0.0.1:50051`
+url: grpc://127.0.0.1:50051/DriverLocation/FindNearByDrivers
+method: POST
+headers:
+  Content-Type: application/json
+examples: ./.resources/Driver Location gRPC - FindNearByDrivers.resources/examples
+order: 20000

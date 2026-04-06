@@ -1,0 +1,24 @@
+$kind: http-request
+name: Auth / Request OTP
+description: >-
+  Requests a one-time password for the provided phone number.
+
+
+  - Accepts `phone` or `phone_no` in the JSON body.
+
+  - Returns `expiresIn` in seconds.
+
+  - When `OTP_RETURN_IN_RESPONSE=true`, the OTP is echoed back for local
+  testing.
+url: "{{baseUrl}}/v1/auth/request-otp"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "phone": "{{phone}}"
+    }
+examples: ./.resources/Auth - Request OTP.resources/examples
+order: 2000

@@ -1,0 +1,21 @@
+$kind: http-request
+name: Profile / Edit Rider User (PATCH)
+description: |-
+  Updates rider profile fields using the PATCH variant.
+
+  - Requires a rider bearer token.
+  - Send any subset of rider profile fields.
+url: "{{baseUrl}}/v1/profile/rider/edit-user"
+method: PATCH
+headers:
+  Authorization: Bearer {{riderAccessToken}}
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "name": "Rider Updated",
+      "gender": "other"
+    }
+examples: ./.resources/Profile - Edit Rider User (PATCH).resources/examples
+order: 11000

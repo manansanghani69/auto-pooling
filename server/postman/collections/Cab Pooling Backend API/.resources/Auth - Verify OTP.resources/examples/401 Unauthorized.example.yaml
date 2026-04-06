@@ -1,0 +1,32 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/v1/auth/verify-otp"
+  method: POST
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "phone": "{{phone}}",
+        "otp": "{{otp}}",
+        "name": "Test Rider",
+        "role": "rider"
+      }
+response:
+  statusCode: 401
+  statusText: Unauthorized
+  headers:
+    Content-Type: application/json
+  body:
+    type: text
+    content: |-
+      {
+        "status": "error",
+        "code": 401,
+        "data": null,
+        "error": {
+          "message": "invalid otp"
+        }
+      }
+order: 2000

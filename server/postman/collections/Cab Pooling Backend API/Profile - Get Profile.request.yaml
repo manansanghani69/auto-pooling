@@ -1,0 +1,13 @@
+$kind: http-request
+name: Profile / Get Profile
+description: |-
+  Returns the current authenticated profile based on the token role.
+
+  - Works for both rider and driver tokens.
+  - Requires `Authorization: Bearer {{accessToken}}`.
+url: "{{baseUrl}}/v1/profile"
+method: GET
+headers:
+  Authorization: Bearer {{accessToken}}
+examples: ./.resources/Profile - Get Profile.resources/examples
+order: 7000

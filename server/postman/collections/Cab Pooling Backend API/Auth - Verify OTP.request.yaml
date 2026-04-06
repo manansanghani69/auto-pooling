@@ -1,0 +1,27 @@
+$kind: http-request
+name: Auth / Verify OTP
+description: >-
+  Verifies the OTP and issues access/refresh tokens.
+
+
+  - `role` is optional, but when supplied it must be `rider` or `driver`.
+
+  - Creates a new user when the phone number does not already exist for the
+  requested role.
+
+  - Returns `201 Created` for a new user and `200 OK` for an existing user.
+url: "{{baseUrl}}/v1/auth/verify-otp"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "phone": "{{phone}}",
+      "otp": "{{otp}}",
+      "name": "Test Rider",
+      "role": "rider"
+    }
+examples: ./.resources/Auth - Verify OTP.resources/examples
+order: 3000

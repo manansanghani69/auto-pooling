@@ -1,0 +1,32 @@
+$kind: http-request
+name: Profile / Create Driver User
+description: >-
+  Completes driver profile creation for an authenticated driver token.
+
+
+  - Requires a driver bearer token.
+
+  - Required fields: `name`, `residentail_address`, `vehical_type`,
+  `vehical_registration_no`, and `passenger_capacity`.
+
+  - Optional fields: `email`, `gender`, and `photo_link`.
+url: "{{baseUrl}}/v1/profile/driver/create-user"
+method: POST
+headers:
+  Authorization: Bearer {{driverAccessToken}}
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "name": "Driver Name",
+      "email": "driver@example.com",
+      "gender": "male",
+      "photo_link": "https://example.com/driver.jpg",
+      "residentail_address": "Ahmedabad",
+      "vehical_type": "SUV",
+      "vehical_registration_no": "GJ01AB1234",
+      "passenger_capacity": 4
+    }
+examples: ./.resources/Profile - Create Driver User.resources/examples
+order: 12000

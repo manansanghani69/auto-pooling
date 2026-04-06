@@ -1,0 +1,36 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/v1/request-trip/rider/request-ride"
+  method: PATCH
+  headers:
+    Authorization: Bearer {{riderAccessToken}}
+    Content-Type: application/json
+  body:
+    type: text
+    content: |-
+      {
+        "pickupLongitude": "72.5714",
+        "pickupLatitude": "23.0225",
+        "dropoffLongitude": "72.6290",
+        "dropoffLatitude": "23.0657"
+      }
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: text
+    content: |-
+      {
+        "status": "success",
+        "code": 200,
+        "data": {
+          "driverLocation": {
+            "driverId": "6ca92f0d-9cb9-424f-be26-4b70445e276f",
+            "location": "23.0225,72.5714",
+            "source": "cache"
+          }
+        }
+      }
+order: 1000

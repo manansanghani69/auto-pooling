@@ -1,0 +1,24 @@
+$kind: http-example
+request:
+  url: grpc://127.0.0.1:50051/DriverLocation/FindNearByDrivers
+  method: POST
+  headers:
+    Content-Type: application/json
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: text
+    content: |-
+      {
+        "drivers": [
+          {
+            "driverId": "6ca92f0d-9cb9-424f-be26-4b70445e276f",
+            "longitute": "72.5714",
+            "latitude": "23.0225"
+          }
+        ]
+      }
+order: 1000

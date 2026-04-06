@@ -1,0 +1,41 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/v1/profile"
+  method: PATCH
+  headers:
+    Authorization: Bearer {{accessToken}}
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "name": "Updated Name",
+        "email": "updated@example.com",
+        "photo_link": "https://example.com/profile.jpg",
+        "gender": "male"
+      }
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: text
+    content: |-
+      {
+        "status": "success",
+        "code": 200,
+        "data": {
+          "user": {
+            "id": "b3f2dd85-4f20-4762-ac9a-54f875e5cf2b",
+            "rider_id": "b3f2dd85-4f20-4762-ac9a-54f875e5cf2b",
+            "role": "rider",
+            "phone_no": "9999999999",
+            "name": "Updated Name",
+            "email": "updated@example.com",
+            "photo_link": "https://example.com/profile.jpg",
+            "gender": "male"
+          }
+        }
+      }
+order: 1000

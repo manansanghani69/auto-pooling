@@ -1,0 +1,31 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/v1/request-trip/driver/accept-ride"
+  method: GET
+  headers:
+    Authorization: Bearer {{driverAccessToken}}
+  queryParams:
+    rideRequestId: b74a6a74-7c52-4c2d-9b11-2b36706e1b43
+response:
+  statusCode: 400
+  statusText: Bad Request
+  headers:
+    Content-Type: application/json
+  body:
+    type: text
+    content: |-
+      {
+        "status": "error",
+        "code": 400,
+        "data": null,
+        "error": {
+          "message": "validation error",
+          "details": [
+            {
+              "field": "rideRequestId",
+              "message": "rideRequestId must be a valid UUID"
+            }
+          ]
+        }
+      }
+order: 2000

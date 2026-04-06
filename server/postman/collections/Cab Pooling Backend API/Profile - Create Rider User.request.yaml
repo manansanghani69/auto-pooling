@@ -1,0 +1,24 @@
+$kind: http-request
+name: Profile / Create Rider User
+description: |-
+  Completes rider profile creation for an authenticated rider token.
+
+  - Requires a rider bearer token.
+  - `name` is required.
+  - Optional fields: `email`, `gender`, and `photo_link`.
+url: "{{baseUrl}}/v1/profile/rider/create-user"
+method: POST
+headers:
+  Authorization: Bearer {{riderAccessToken}}
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "name": "Rider Name",
+      "email": "rider@example.com",
+      "gender": "male",
+      "photo_link": "https://example.com/rider.jpg"
+    }
+examples: ./.resources/Profile - Create Rider User.resources/examples
+order: 9000

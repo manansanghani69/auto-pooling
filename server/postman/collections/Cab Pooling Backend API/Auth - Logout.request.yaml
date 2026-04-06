@@ -1,0 +1,22 @@
+$kind: http-request
+name: Auth / Logout
+description: >-
+  Revokes a refresh token and ends the session represented by that token.
+
+
+  - Body field: `refreshToken`.
+
+  - The endpoint still returns success when no token is supplied, but nothing is
+  revoked.
+url: "{{baseUrl}}/v1/auth/logout"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "refreshToken": "{{refreshToken}}"
+    }
+examples: ./.resources/Auth - Logout.resources/examples
+order: 5000

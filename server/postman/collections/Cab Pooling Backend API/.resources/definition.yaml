@@ -1,0 +1,40 @@
+$kind: collection
+description: >-
+  # Cab Pooling Backend API
+
+
+  Postman collection for the Express backend endpoints under `/health`,
+  `/v1/auth`, `/v1/profile`, and `/v1/driver-location`.
+
+
+  ## Authentication flow
+
+  1. Call `Request OTP` with `phone` or `phone_no`.
+
+  2. Call `Verify OTP` with `phone`, `otp`, and optional `role` (`rider` or
+  `driver`).
+
+  3. Copy the returned tokens into `accessToken`, `riderAccessToken`,
+  `driverAccessToken`, and `refreshToken` as needed.
+
+
+  ## Notes
+
+  - Protected endpoints require `Authorization: Bearer <token>`.
+
+  - Rider and driver profile routes enforce role-based access server-side.
+
+  - `Update Driver Location` requires a driver token, while `Get Driver
+  Location` accepts any authenticated token.
+
+  - In local development, OTP may be returned in the response when
+  `OTP_RETURN_IN_RESPONSE=true`.
+variables:
+  baseUrl: http://localhost:4000
+  accessToken: ""
+  riderAccessToken: ""
+  driverAccessToken: ""
+  refreshToken: ""
+  phone: "9999999999"
+  otp: "1234"
+  driverId: 6ca92f0d-9cb9-424f-be26-4b70445e276f

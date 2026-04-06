@@ -1,0 +1,22 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/v1/auth/delete/user"
+  method: DELETE
+  headers:
+    Authorization: Bearer {{accessToken}}
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: text
+    content: |-
+      {
+        "status": "success",
+        "code": 200,
+        "data": {
+          "ok": true
+        }
+      }
+order: 1000

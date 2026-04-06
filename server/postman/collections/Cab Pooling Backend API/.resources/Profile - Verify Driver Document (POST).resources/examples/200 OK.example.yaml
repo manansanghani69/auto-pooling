@@ -1,0 +1,48 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/v1/profile/driver/verify-document"
+  method: POST
+  headers:
+    Authorization: Bearer {{driverAccessToken}}
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "vehical_photo": "https://example.com/car.jpg",
+        "driving_license_photo": "https://example.com/license.jpg",
+        "vehical_rc_photo": "https://example.com/rc.jpg"
+      }
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: text
+    content: |-
+      {
+        "status": "success",
+        "code": 200,
+        "data": {
+          "user": {
+            "id": "6ca92f0d-9cb9-424f-be26-4b70445e276f",
+            "driver_id": "6ca92f0d-9cb9-424f-be26-4b70445e276f",
+            "role": "driver",
+            "phone_no": "9999999999",
+            "name": "Driver Name",
+            "email": "driver@example.com",
+            "photo_link": "https://example.com/driver.jpg",
+            "gender": "male",
+            "residentail_address": "Ahmedabad",
+            "vehical_type": "Sedan",
+            "vehical_registration_no": "GJ01AB1234",
+            "passenger_capacity": 3,
+            "vehical_photo": "https://example.com/car.jpg",
+            "driving_license_photo": "https://example.com/license.jpg",
+            "vehical_rc_photo": "https://example.com/rc.jpg",
+            "onboarding_status": "documents_uploaded"
+          }
+        }
+      }
+order: 1000

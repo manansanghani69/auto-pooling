@@ -1,0 +1,20 @@
+$kind: http-example
+request:
+  url: grpc://127.0.0.1:50051/DriverLocation/FindNearByDrivers
+  method: POST
+  headers:
+    Content-Type: application/json
+response:
+  statusCode: 3
+  statusText: INVALID_ARGUMENT
+  headers:
+    Content-Type: application/json
+  body:
+    type: text
+    content: |-
+      {
+        "code": 3,
+        "message": "validation error",
+        "details": "pickUpLongitude: pickUpLongitude is required"
+      }
+order: 2000

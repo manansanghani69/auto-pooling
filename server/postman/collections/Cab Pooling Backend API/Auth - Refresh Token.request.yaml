@@ -1,0 +1,20 @@
+$kind: http-request
+name: Auth / Refresh Token
+description: |-
+  Rotates the access token using a valid refresh token.
+
+  - Body field: `refreshToken`.
+  - Returns a new access token and refresh token pair.
+  - Returns `401` when the refresh token is invalid or expired.
+url: "{{baseUrl}}/v1/auth/refresh"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "refreshToken": "{{refreshToken}}"
+    }
+examples: ./.resources/Auth - Refresh Token.resources/examples
+order: 4000

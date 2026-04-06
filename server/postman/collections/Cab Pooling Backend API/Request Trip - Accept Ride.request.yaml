@@ -1,0 +1,16 @@
+$kind: http-request
+name: Request Trip / Accept Ride
+description: |-
+  Accepts a pending ride request for an authenticated driver.
+
+  - Requires a driver bearer token.
+  - Query parameter: `rideRequestId`.
+  - Returns 404 when request is missing or already accepted.
+url: "{{baseUrl}}/v1/request-trip/driver/accept-ride"
+method: GET
+headers:
+  Authorization: Bearer {{driverAccessToken}}
+queryParams:
+  rideRequestId: b74a6a74-7c52-4c2d-9b11-2b36706e1b43
+examples: ./.resources/Request Trip - Accept Ride.resources/examples
+order: 19000

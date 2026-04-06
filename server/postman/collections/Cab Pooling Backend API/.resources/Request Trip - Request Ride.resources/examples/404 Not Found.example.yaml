@@ -1,0 +1,33 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/v1/request-trip/rider/request-ride"
+  method: PATCH
+  headers:
+    Authorization: Bearer {{riderAccessToken}}
+    Content-Type: application/json
+  body:
+    type: text
+    content: |-
+      {
+        "pickupLongitude": "72.5714",
+        "pickupLatitude": "23.0225",
+        "dropoffLongitude": "72.6290",
+        "dropoffLatitude": "23.0657"
+      }
+response:
+  statusCode: 404
+  statusText: Not Found
+  headers:
+    Content-Type: application/json
+  body:
+    type: text
+    content: |-
+      {
+        "status": "error",
+        "code": 404,
+        "data": null,
+        "error": {
+          "message": "driver location not found"
+        }
+      }
+order: 2000
