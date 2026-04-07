@@ -1,6 +1,7 @@
 import http from 'http';
 import dotenv from 'dotenv';
 import httpProxy from 'http-proxy';
+import { forwardApiRoute } from './api-routes.js';
 
 dotenv.config({ path: new URL('./.env', import.meta.url), override: true });
 
@@ -83,19 +84,24 @@ function forwardHealthRoute(pathname, req, res) {
   return true;
 }
 
-function forwardApiRoute(pathname, req, res) {
-  if (pathname.startsWith('/v1/auth')) return forwardRequest(req, res, AUTH_SERVICE_URL);
-  if (pathname.startsWith('/v1/profile')) return forwardRequest(req, res, PROFILE_SERVICE_URL);
-  if (pathname.startsWith('/v1/driver-location')) {
-    return forwardRequest(req, res, DRIVER_LOCATION_SERVICE_URL);
-  }
-  return false;
-}
-
 function handleHttpProxy(req, res) {
   const pathname = parsePathname(req.url);
   if (forwardHealthRoute(pathname, req, res)) return;
-  if (forwardApiRoute(pathname, req, res)) return;
+  if (
+    forwardApiRoute({
+      pathname,
+      req,
+      res,
+      serviceUrls: {
+        auth: AUTH_SERVICE_URL,
+        profile: PROFILE_SERVICE_URL,
+        driverLocation: DRIVER_LOCATION_SERVICE_URL,
+      },
+      forwardRequest,
+    })
+  ) {
+    return;
+  }
   return handleNoRoute(res, pathname);
 }
 
