@@ -1,0 +1,54 @@
+{
+  "prd_summary": "Driver onboarding flow with personal details, vehicle details, document upload placeholder, and application status screens.",
+  "features": [
+    "Collect personal details in a dedicated onboarding screen",
+    "Collect vehicle details and submit supported fields to backend",
+    "Show document upload UI placeholders until upload API exists",
+    "Display application review status with refresh support"
+  ],
+  "user_flows": [
+    "Login -> OTP -> Personal Details -> Vehicle Details -> Upload Documents",
+    "Login -> OTP -> Application Status when onboarding status is documents_uploaded",
+    "Login -> OTP -> Home when onboarding status is approved"
+  ],
+  "states": [
+    "idle",
+    "loading",
+    "validation_error",
+    "submission_success",
+    "submission_failure",
+    "status_refresh"
+  ],
+  "ui_components": [
+    "Progress header",
+    "Profile photo placeholder",
+    "Text inputs",
+    "Gender chips",
+    "Vehicle type cards",
+    "Seat stepper",
+    "Document cards",
+    "Status timeline"
+  ],
+  "data_needs": [
+    "driver profile create endpoint",
+    "driver profile fetch endpoint",
+    "driver onboarding status"
+  ],
+  "figma_mappings": [],
+  "relationships": [
+    "Personal Details -> Vehicle Details (continue)",
+    "Vehicle Details -> Upload Documents (profile create success)",
+    "Application Status -> Home (approved after refresh)"
+  ],
+  "decisions": [
+    "DOB and referral code stay UI-only until backend supports them",
+    "Document upload remains placeholder-only until upload API exists",
+    "Personal and vehicle details share a single onboarding bloc across the first two screens"
+  ],
+  "open_questions": [],
+  "assumptions": [
+    "GET /v1/profile may return additional driver fields for prefill, but onboarding must still work if it does not",
+    "Only documented driver onboarding statuses are available from backend"
+  ],
+  "status": "planning_complete"
+}

@@ -2,7 +2,7 @@ import 'package:auto_pooling_driver/common/theme/app_text_styles.dart';
 import 'package:auto_pooling_driver/constants/app_constants.dart';
 import 'package:auto_pooling_driver/core/errors/failures.dart';
 import 'package:auto_pooling_driver/core/extensions/build_context_x.dart';
-import 'package:auto_pooling_driver/core/extensions/failure_type_x.dart';
+import 'package:auto_pooling_driver/core/extensions/failure_x.dart';
 import 'package:auto_pooling_driver/presentation/home/bloc/home_bloc.dart';
 import 'package:auto_pooling_driver/presentation/home/bloc/home_event.dart';
 import 'package:auto_pooling_driver/widgets/app_primary_button.dart';
@@ -19,7 +19,7 @@ class HomeErrorState extends StatelessWidget {
     );
 
     final String description =
-        failure?.type.resolveMessage(context.localization) ??
+        failure?.resolveMessage(context.localization) ??
         context.localization.homeErrorDescription;
 
     return Center(
