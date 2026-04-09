@@ -7,6 +7,8 @@ import 'package:auto_pooling_driver/presentation/onboarding/widgets/onboarding_h
 import 'package:auto_pooling_driver/presentation/onboarding/widgets/onboarding_info_banner.dart';
 import 'package:auto_pooling_driver/presentation/onboarding/widgets/onboarding_progress_section.dart';
 import 'package:auto_pooling_driver/presentation/onboarding/widgets/onboarding_upload_placeholder.dart';
+import 'package:auto_pooling_driver/routes.dart';
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 
 class DocumentUploadBody extends StatelessWidget {
@@ -35,7 +37,8 @@ class DocumentUploadBody extends StatelessWidget {
         padding: const EdgeInsets.all(OnboardingConstants.footerSpacing),
         child: OnboardingFooterAction(
           label: context.localization.onboardingSubmitDocumentsAction,
-          onPressed: () => _showUploadPlaceholder(context),
+          onPressed: () =>
+              context.replaceRoute(const DriverOnboardingStatusRoute()),
           secondary: TextButton.icon(
             onPressed: () => _showUploadPlaceholder(context),
             icon: const Icon(Icons.help_outline_rounded),

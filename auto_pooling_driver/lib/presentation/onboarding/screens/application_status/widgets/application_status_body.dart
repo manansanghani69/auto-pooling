@@ -65,9 +65,9 @@ class ApplicationStatusBody extends StatelessWidget {
                 onPressed: state.isRefreshingStatus
                     ? null
                     : () {
-                        context.read<OnboardingBloc>().add(
-                          const OnboardingStatusRefreshRequestedEvent(),
-                        );
+                        context.router.replaceAll(<PageRouteInfo<dynamic>>[
+                          const HomeRoute(),
+                        ]);
                       },
                 secondary: TextButton(
                   onPressed: () {
