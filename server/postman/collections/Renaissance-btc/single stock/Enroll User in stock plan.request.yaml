@@ -1,0 +1,22 @@
+$kind: http-request
+description: |
+  Generated from cURL: curl -X POST "http://localhost:3000/subscriptions/enroll" \
+       -H "Content-Type: application/json" \
+       -d '{
+         "userId": 123,
+         "subscriptionPlanId": "uuid-of-plan",
+         "paymentGateway": "RAZORPAY"
+       }'
+url: "{{Portfolio_URL}}/single-stock/enroll-stock-plan"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+           "userId": 413,
+           "stockPlanId": "0a85968b-94e8-487c-ae6c-c538c1b7b108",
+           "durationMonths":6
+    }
+order: 4000

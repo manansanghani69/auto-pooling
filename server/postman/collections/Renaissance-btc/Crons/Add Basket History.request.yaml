@@ -1,0 +1,39 @@
+$kind: http-request
+description: |
+  Generated from cURL: curl -X GET "http://localhost:3000/subscriptions/plans" \
+       -H "Content-Type: application/json"
+url: "{{Cron_Url}}/basket-performance-history"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+        "basketId": "b3b24e23-0565-456b-a051-cfa61a4f3fd5",
+
+      "navHistory": [
+        {"date": "Wednesday, October 15, 2025", "nav_value": 10.0000},
+        {"date": "Thursday, October 16, 2025", "nav_value": 10.0224},
+        {"date": "Friday, October 17, 2025", "nav_value": 10.0167},
+        {"date": "Saturday, October 18, 2025", "nav_value": 10.0167},
+        {"date": "Sunday, October 19, 2025", "nav_value": 10.0167},
+        {"date": "Monday, October 20, 2025", "nav_value": 10.0857},
+        {"date": "Tuesday, October 21, 2025", "nav_value": 10.1544},
+        {"date": "Wednesday, October 22, 2025", "nav_value": 10.1544},
+        {"date": "Thursday, October 23, 2025", "nav_value": 10.1491},
+        {"date": "Friday, October 24, 2025", "nav_value": 10.1029},
+        {"date": "Saturday, October 25, 2025", "nav_value": 10.1029},
+        {"date": "Sunday, October 26, 2025", "nav_value": 10.1029},
+        {"date": "Monday, October 27, 2025", "nav_value": 10.2586},
+        {"date": "Tuesday, October 28, 2025", "nav_value": 10.2499},
+        {"date": "Wednesday, October 29, 2025", "nav_value": 10.2933},
+        {"date": "Thursday, October 30, 2025", "nav_value": 10.2609},
+        {"date": "Friday, October 31, 2025", "nav_value": 10.1606},
+        {"date": "Saturday, November 01, 2025", "nav_value": 10.1606},
+        {"date": "Sunday, November 02, 2025", "nav_value": 10.1606},
+        {"date": "Monday, November 03, 2025", "nav_value": 10.2155}
+      ]
+
+    }
+order: 5000

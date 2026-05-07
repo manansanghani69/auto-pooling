@@ -1,0 +1,11 @@
+$kind: http-request
+url: "{{Portfolio_URL}}/rebalance/trigger-rebalance"
+method: POST
+body:
+  type: json
+  content: |-
+    {
+        "adminRebalanceLogId":"b2b3dea1-762b-4ff2-8c35-0b63b4425aab",
+        "basketId":"137485e2-b4e1-4fd1-824e-b09f95571766"
+    }
+order: 1000

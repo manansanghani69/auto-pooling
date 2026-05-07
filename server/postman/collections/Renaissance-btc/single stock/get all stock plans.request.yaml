@@ -1,0 +1,19 @@
+$kind: http-request
+description: |
+  Generated from cURL: curl -X GET "http://localhost:3000/subscriptions/plans" \
+       -H "Content-Type: application/json"
+url: "{{Portfolio_URL}}/single-stock/stock-plans/overview?page=1&limit=10&userId=60&isTrail=false&isFeatured=true"
+method: GET
+headers:
+  - key: Content-Type
+    value: application/json
+  - key: Authorization
+    value: Bearer {{Token}}
+    disabled: true
+queryParams:
+  page: "1"
+  limit: "10"
+  userId: "60"
+  isTrail: "false"
+  isFeatured: "true"
+order: 1000

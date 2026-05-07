@@ -1,0 +1,19 @@
+$kind: http-request
+url: "{{UAM_Url}}/mf/magic-link"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: "{\r
+
+    \  \"userId\": 612,\r
+
+    \  \"redirectTo\": \"/investor/dashboard\", // optional\r
+
+    \  \"platform\": \"ios\" // 'android' | 'ios'  // optional\r
+
+    }\r\n"
+auth:
+  type: noauth
+order: 1000

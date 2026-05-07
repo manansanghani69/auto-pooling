@@ -1,0 +1,17 @@
+$kind: http-request
+url: "{{Portfolio_URL}}/investment/pending-investment"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+        "userId":511,
+        "basketId":"008c495f-d2d3-4978-8e5d-54c3982ee876"
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{Token}}"
+order: 10000

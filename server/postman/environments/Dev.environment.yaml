@@ -1,0 +1,20 @@
+name: Dev
+values:
+  - key: UAM_Url
+    enabled: true
+    value: 'http://k8s-renmicroservicesg-77f90cc091-2078019003.ap-south-1.elb.amazonaws.com/uam'
+  - key: KYC_Url
+    enabled: true
+    value: 'http://k8s-renmicroservicesg-77f90cc091-2078019003.ap-south-1.elb.amazonaws.com/kyc'
+  - key: Portfolio_URL
+    enabled: true
+    value: 'http://k8s-renmicroservicesg-77f90cc091-2078019003.ap-south-1.elb.amazonaws.com/portfolio'
+  - key: CMS_Url
+    enabled: true
+    value: 'http://k8s-renmicroservicesg-77f90cc091-2078019003.ap-south-1.elb.amazonaws.com/cms'
+  - key: Token
+    enabled: true
+    value: eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJlQUZRTThRdERYYjdmRWFmSG54YmRfY2hDTDNJTnQ2RndxQTRDRHhEMzVrIn0.eyJleHAiOjE3NTg3NDUxODEsImlhdCI6MTc1ODcwOTE4MSwianRpIjoiMTFkY2ZiOTYtMzhjMC00MDg5LTkyNmMtNWRjZTRjMTVmNzFmIiwiaXNzIjoiaHR0cDovL2E4NzIwNjQ5Zjk2ZGQ0ZGY1OWVkNTgyYTkxYjI3NzU1LTk0MjU4Mzg0OS5hcC1zb3V0aC0xLmVsYi5hbWF6b25hd3MuY29tL3JlYWxtcy9BZHZpc29yLUFscGhhIiwiYXVkIjoiYWNjb3VudCIsInN1YiI6ImYxOTMyZTFhLThhMWItNGRiNS1hNDRjLTJhYWFiMWYzZjA5MSIsInR5cCI6IkJlYXJlciIsImF6cCI6ImFkdmlzb3ItYWxwaGEtYmFja2VuZC1jbGllbnQiLCJzZXNzaW9uX3N0YXRlIjoiZjJiYmYzM2QtYjJlZC00YjI5LThiN2MtYmFkYzQ2YzQ2ZjMxIiwiYWNyIjoiMSIsImFsbG93ZWQtb3JpZ2lucyI6WyIqIl0sInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJvZmZsaW5lX2FjY2VzcyIsInVtYV9hdXRob3JpemF0aW9uIiwiZGVmYXVsdC1yb2xlcy1hZHZpc29yLWFscGhhIiwidXNlciJdfSwicmVzb3VyY2VfYWNjZXNzIjp7ImFjY291bnQiOnsicm9sZXMiOlsibWFuYWdlLWFjY291bnQiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJvZmlsZSJdfX0sInNjb3BlIjoiZW1haWwgcGhvbmUgcHJvZmlsZSIsInNpZCI6ImYyYmJmMzNkLWIyZWQtNGIyOS04YjdjLWJhZGM0NmM0NmYzMSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiI3MDQxNzQ3NjI2In0.FO6wODaK43G-zx3Blw6a0XX7XFD9isT2zS5R-naYB8yuUF4BKFS5K7u9vBUZ0bxMAZ4Ve2INbTpqKozc-OasalpBVKVgKG4xR7Sl69qL55GyJDexdg97WC2X7jFtAsxuIEHtT0LnYurfvS9NtQ9pcyPlJwY7rAS7JmhdYBBhGJsRWck-JFy9N2ZJ_KGLd-K2kPBEmriGOeY6K9kuXRj44A17w27E0hF4H-vnfogHuIfoHl8DPRQ9SnGVy7z6lkocvlb1oUBZoyGp0WqCGr8iIyKB-nAu4cxVB8jrYmCoXi73-Cliag_AiSrrB8oXFCmLe7J2oiUfMXSKwYckCYkNbw
+  - key: Cron_Url
+    enabled: true
+    value: ''

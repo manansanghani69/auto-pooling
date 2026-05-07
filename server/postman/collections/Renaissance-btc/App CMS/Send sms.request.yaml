@@ -1,0 +1,15 @@
+$kind: http-request
+url: "{{CMS_Url}}/notification/send-sms"
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \    \"mobile\":\"8435186543\",\r
+
+    \    \"countryCode\":\"+91\",\r
+
+    \    \"message\":\"helooooo\"\r
+
+    }"
+order: 11000

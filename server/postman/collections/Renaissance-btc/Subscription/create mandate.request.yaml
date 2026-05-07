@@ -1,0 +1,27 @@
+$kind: http-request
+description: |
+  Generated from cURL: curl -X POST "http://localhost:3000/subscriptions/enroll" \
+       -H "Content-Type: application/json" \
+       -d '{
+         "userId": 123,
+         "subscriptionPlanId": "uuid-of-plan",
+         "paymentGateway": "RAZORPAY"
+       }'
+url: "{{Portfolio_URL}}/subscriptions/create-payment"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+           "userId": 597,
+           "subscriptionPlanId": "86ee4f2b-ec6e-410e-ac9e-ec590f1b2c9c",
+           "durationMonths":6,
+           "amount":14499,
+           "paymentGateway": "RAZORPAY",
+           "couponCode":""
+        //    "selectedBasketId":""
+
+    }
+order: 7000

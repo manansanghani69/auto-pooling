@@ -1,0 +1,13 @@
+$kind: http-request
+url: "{{UAM_Url}}/users/terms/:userId"
+method: PUT
+headers:
+  Content-Type: application/json
+pathVariables:
+  userId: "435"
+body:
+  type: json
+  content: "{\r\n  \"termsAccepted\": true\r\n}"
+auth:
+  type: noauth
+order: 5000

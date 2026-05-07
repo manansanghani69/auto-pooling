@@ -1,0 +1,23 @@
+$kind: http-request
+description: |
+  Generated from cURL: curl -X POST "http://localhost:3000/subscriptions/enroll" \
+       -H "Content-Type: application/json" \
+       -d '{
+         "userId": 123,
+         "subscriptionPlanId": "uuid-of-plan",
+         "paymentGateway": "RAZORPAY"
+       }'
+url: "{{Portfolio_URL}}/subscriptions/:userId/subscription-test"
+method: PUT
+headers:
+  Content-Type: application/json
+pathVariables:
+  userId: "666"
+body:
+  type: json
+  content: |-
+    {
+      "subscriptionStatus": "EXPIRED", // EXPIRED || ACTIVE
+      "subscriptionEndDate": "2026-03-19"
+    }
+order: 12000

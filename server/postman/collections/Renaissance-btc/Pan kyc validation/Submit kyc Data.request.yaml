@@ -1,0 +1,15 @@
+$kind: http-request
+url: "{{KYC_Url}}/submit"
+method: POST
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{Token}}
+body:
+  type: text
+  content: |
+    {
+      "userId":17,
+      "pan": "AXNPJ3051E",
+      "dob": "15/05/1995"
+    }
+order: 1000

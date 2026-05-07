@@ -1,0 +1,15 @@
+$kind: http-request
+url: "{{UAM_Url}}/risk-profile/answer"
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \  \"userId\": 55,\r
+
+    \  \"questionId\": 7,\r
+
+    \  \"answer\": [\"Banks and corporate fixed deposits\"]\r
+
+    }"
+order: 4000

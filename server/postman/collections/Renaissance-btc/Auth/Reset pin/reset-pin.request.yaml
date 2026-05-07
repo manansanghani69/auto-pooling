@@ -1,0 +1,19 @@
+$kind: http-request
+url: "{{url}}/auth/verify-otp"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: "{\r
+
+    \  \"countryCode\": \"+91\",\r
+
+    \  \"mobile\": \"9876543211\",\r
+
+    \  \"otp\": \"375414\"\r
+
+    }\r\n"
+auth:
+  type: noauth
+order: 1000

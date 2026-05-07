@@ -1,0 +1,50 @@
+$kind: http-request
+description: |
+  Generated from cURL: curl -X POST "http://localhost:3000/subscriptions/enroll" \
+       -H "Content-Type: application/json" \
+       -d '{
+         "userId": 123,
+         "subscriptionPlanId": "uuid-of-plan",
+         "paymentGateway": "RAZORPAY"
+       }'
+url: "{{Portfolio_URL}}/rebalance/acknowledge-rebalance"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+        "transactionId": "TRX_93f093c0795240e597c7cda2422773bd",
+        "userId": 331,
+        "basketId": "c9a52493-be82-496e-848f-e9620b9b7fb9",
+        "investmentAmount": 29166,
+        "completedDate": "2025-07-31T15:21:16.092Z",
+        "buyAmount": 29166,
+        "sellAmount": 29190,
+        "investmentType": "NEW",
+        "plannedStocks": "{\"investmentDetails\":[{\"co_code\":2208,\"stockName\":\"BALRAMCHIN\",\"action\":\"SELL\",\"weightage\":\"24.70\",\"ltp\":559,\"dividedAmt\":22919,\"qty\":41},{\"co_code\":4987,\"stockName\":\"HDFCBANK\",\"action\":\"SELL\",\"weightage\":\"37.69\",\"ltp\":973,\"dividedAmt\":21406,\"qty\":22},{\"co_code\":552,\"stockName\":\"TATACHEM\",\"action\":\"BUY\",\"weightage\":\"22.79\",\"ltp\":935,\"dividedAmt\":43945,\"qty\":47}],\"basketName\":\"Growth Titans\",\"logo\":null,\"buyAmount\":43945,\"sellAmount\":44325}",
+        "smallCaseAuthId": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzbWFsbGNhc2VBdXRoSWQiOiI2ODZmNjhkYjI1NGM0OWE0NzVjZjcxMGQiLCJpYXQiOjE3NTI1MDQzODQsImV4cCI6MTc1MjUwNzk4NH0.sQjWyA6XAxLSeuj1O1VyijnvOsRLkdWIoGfASeuY_5k",
+        "smallCaseResponse": "{\"broker\":\"kite-leprechaun\",\"smallcaseAuthToken\":\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzbWFsbGNhc2VBdXRoSWQiOiI2ODZmNjhkYjI1NGM0OWE0NzVjZjcxMGQiLCJpYXQiOjE3NTM5NzgxMjIsImV4cCI6MTc1Mzk4MTcyMn0.YH0-FuGe2B0HIgapnXNyc5DhFBsxE-PmUBjWe5zteCE\",\"success\":true,\"transaction\":\"TRANSACTION\",\"data\":{\"batches\":[{\"status\":\"COMPLETED\",\"quantity\":1,\"variety\":\"regular\",\"filled\":1,\"orders\":[{\"status\":\"COMPLETE\",\"product\":\"CNC\",\"quantity\":125,\"tradingsymbol\":\"AEGISLOG\",\"exchangeOrderId\":\"6419975959fd1120f87b8df0688b951a9bbf2af0a233c5ca\",\"averagePrice\":718.98208,\"exchange\":\"NSE\",\"transactionType\":\"BUY\",\"filledQuantity\":125,\"orderType\":\"MARKET\"}],\"batchId\":\"688b951a23a22cfee42c3770\",\"sellAmount\":0,\"completedDate\":\"2025-07-31T16:09:02.157Z\",\"transactionId\":\"TRX_e5541a409a2f4aeab98eba23a1dfca52\",\"unplaced\":[],\"buyAmount\":89872.759999999995}]},\"transactionId\":\"TRX_e5541a409a2f4aeab98eba23a1dfca52\"}",
+        "stocks": [
+            {
+                "stockName": "HDFCBANK",
+                "transactionType": "SELL",
+                "averagePrice": 973,
+                "qty": 22
+            },
+            {
+                "stockName": "BALRAMCHIN",
+                "transactionType": "SELL",
+                "averagePrice": 559,
+                "qty": 41
+            },
+            {
+                "stockName": "TATACHEM",
+                "transactionType": "BUY",
+                "averagePrice": 935,
+                "qty": 47
+            }
+        ]
+    }
+order: 5000

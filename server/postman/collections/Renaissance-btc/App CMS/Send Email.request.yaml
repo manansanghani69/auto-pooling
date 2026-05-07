@@ -1,0 +1,21 @@
+$kind: http-request
+url: "{{CMS_Url}}/notification/send-email"
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \  \"to\": \"vp3828168@gmail.com\",\r
+
+    \  \"subject\": \"Welcome to Our Platform\",\r
+
+    \  \"html\": \"<h1>Hello User</h1><p>Thanks for joining us!</p>\",\r
+
+    \  \"fromName\": \"Admin Team\",\r
+
+    \  \"fromEmail\": \"support@renaissanceadvisors.in\",\r
+
+    \  \"text\": \"Hello User, Thanks for joining us!\"\r
+
+    }"
+order: 10000

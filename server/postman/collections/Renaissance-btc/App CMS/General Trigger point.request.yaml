@@ -1,0 +1,23 @@
+$kind: http-request
+url: "{{CMS_Url}}/notification/add-general"
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \    \"message\":\"New Rule for all User\",\r
+
+    \    \"title\":\"Mandetory For All\",\r
+
+    \    \"subtitle\":\"subtitle\",\r
+
+    \    \"type\":\"General\",\r
+
+    \    \"metaData\": {\r
+
+    \    \"\":\"\"\r
+
+    \  }\r
+
+    }"
+order: 16000

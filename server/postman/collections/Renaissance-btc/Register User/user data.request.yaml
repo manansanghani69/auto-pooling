@@ -1,0 +1,15 @@
+$kind: http-request
+url: "{{UAM_Url}}/users/data?userId=435"
+method: GET
+headers:
+  Content-Type: application/json
+queryParams:
+  userId: "435"
+body:
+  type: json
+  content: ""
+auth:
+  type: bearer
+  credentials:
+    token: "{{Token}}"
+order: 6000

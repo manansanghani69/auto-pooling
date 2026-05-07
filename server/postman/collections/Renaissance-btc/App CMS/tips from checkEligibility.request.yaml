@@ -1,0 +1,25 @@
+$kind: http-request
+url: "{{CMS_Url}}/notification/add-tip"
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \    \"planIds\":[\"cfebf7c0-381c-41cb-9085-78f777c9520a\"],\r
+
+    \    \"message\":\"New Stock Idea is Added\",\r
+
+    \    \"title\":\"Stock Idea\",\r
+
+    \    \"subtitle\":\"Testing By me\",\r
+
+    \    \"type\":\"Stock Idea\",\r
+
+    \    \"metaData\": {\r
+
+    \    \"stockId\": \"0a85968b\"\r
+
+    \  }\r
+
+    }"
+order: 14000

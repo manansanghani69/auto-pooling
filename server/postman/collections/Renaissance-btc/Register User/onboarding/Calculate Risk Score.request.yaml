@@ -1,0 +1,9 @@
+$kind: http-request
+url: "{{UAM_Url}}/risk-profile/calculate?userId=60"
+method: GET
+queryParams:
+  userId: "60"
+body:
+  type: json
+  content: "{\r\n  \"userId\": 6\r\n}"
+order: 3000

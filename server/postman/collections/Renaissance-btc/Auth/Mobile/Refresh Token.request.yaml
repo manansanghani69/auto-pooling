@@ -1,0 +1,15 @@
+$kind: http-request
+url: "{{UAM_Url}}/auth/refresh-token"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: "{\r
+
+    \   \"refresh_token\":\"eyJhbGciOiJIUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJmY2JiODUzMy1kMTU3LTRkYzEtYjBmZi1kYzRmOTQ1YmQ3NzEifQ.eyJleHAiOjE3NTgwODgyOTcsImlhdCI6MTc1ODA4NjQ5NywianRpIjoiM2U5MWExOGItYzlkZC00MDFjLTk0YTAtNmI3ZWZkMmZiZTJiIiwiaXNzIjoiaHR0cDovL2tleWNsb2FrLmtleWNsb2FrLnN2Yy5jbHVzdGVyLmxvY2FsL3JlYWxtcy9BZHZpc29yLUFscGhhIiwiYXVkIjoiaHR0cDovL2tleWNsb2FrLmtleWNsb2FrLnN2Yy5jbHVzdGVyLmxvY2FsL3JlYWxtcy9BZHZpc29yLUFscGhhIiwic3ViIjoiZDY0M2ZlOWMtMmY3YS00ZGNjLTg0MDUtMWE4MDJlNTU0ZTZkIiwidHlwIjoiUmVmcmVzaCIsImF6cCI6ImFkdmlzb3ItYWxwaGEtYmFja2VuZC1jbGllbnQiLCJzZXNzaW9uX3N0YXRlIjoiM2M2ZWQzNzgtYjFmMy00ZDJhLWJiMDctODM1OWE1ZTlkOWU2Iiwic2NvcGUiOiJlbWFpbCBwcm9maWxlIHBob25lIiwic2lkIjoiM2M2ZWQzNzgtYjFmMy00ZDJhLWJiMDctODM1OWE1ZTlkOWU2In0.zwIC26LCRVmQFaGaUUSrOlRXiCNISfHMWFXHMIDtCWM\"\r
+
+    }\r\n"
+auth:
+  type: noauth
+order: 4000

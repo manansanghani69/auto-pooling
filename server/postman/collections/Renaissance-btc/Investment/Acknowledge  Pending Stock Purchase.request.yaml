@@ -1,0 +1,57 @@
+$kind: http-request
+description: |
+  Generated from cURL: curl -X POST "http://localhost:3000/subscriptions/enroll" \
+       -H "Content-Type: application/json" \
+       -d '{
+         "userId": 123,
+         "subscriptionPlanId": "uuid-of-plan",
+         "paymentGateway": "RAZORPAY"
+       }'
+url: "{{Portfolio_URL}}/investment/acknowledge-pending-investment"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "transactionId": "TRX_24e6fce3060a4d9bac886e6d7769b4c8",
+      "userId": 454,
+      "basketId": "04c146be-b39d-4885-a73e-c17ed942b8f8",
+      "investmentAmount": 100000.0,
+      "completedDate": "2025-07-31T15:21:16.092Z",
+      "buyAmount": 249156.58000000002,
+      "sellAmount": 0,
+      "investmentType": "Pending",
+      "requestId": "request",
+      "plannedStocks": "{\"investmentDetails\":[{\"co_code\":341,\"stockName\":\"KOTARISUG\",\"action\":\"BUY\",\"weightage\":\"8.92\",\"ltp\":30,\"dividedAmt\":18030,\"qty\":601,\"weightageFromInvestment\":9.01},{\"co_code\":2208,\"stockName\":\"BALRAMCHIN\",\"action\":\"BUY\",\"weightage\":\"36.49\",\"ltp\":559,\"dividedAmt\":72670,\"qty\":130,\"weightageFromInvestment\":36.34},{\"co_code\":1215,\"stockName\":\"PEARLPOLY\",\"action\":\"BUY\",\"weightage\":\"5.9\",\"ltp\":32,\"dividedAmt\":12000,\"qty\":375,\"weightageFromInvestment\":6},{\"co_code\":4987,\"stockName\":\"HDFCBANK\",\"action\":\"BUY\",\"weightage\":\"48.69\",\"ltp\":973,\"dividedAmt\":97300,\"qty\":100,\"weightageFromInvestment\":48.65}],\"basketName\":\"Growth Titans\",\"logo\":null,\"buyAmount\":200000,\"sellAmount\":0,\"totalWeightage\":100,\"totalWeightageInvestment\":100}",
+      "smallCaseAuthId": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+      "smallCaseResponse": "{\"broker\":\"kite-leprechaun\",\"smallcaseAuthToken\":\"...\",\"success\":true,\"transaction\":\"TRANSACTION\",\"data\":{\"batches\":[{\"status\":\"COMPLETED\",\"quantity\":1,\"variety\":\"regular\",\"filled\":1,\"orders\":[{\"status\":\"COMPLETE\",\"product\":\"CNC\",\"quantity\":125,\"tradingsymbol\":\"AEGISLOG\",\"exchangeOrderId\":\"64199759...\",\"averagePrice\":718.98208,\"exchange\":\"NSE\",\"transactionType\":\"BUY\",\"filledQuantity\":125,\"orderType\":\"MARKET\"}],\"batchId\":\"688b951a23a22cfee42c3770\",\"sellAmount\":0,\"completedDate\":\"2025-07-31T16:09:02.157Z\",\"transactionId\":\"TRX_e5541a409a2f4aeab98eba23a1dfca52\",\"unplaced\":[],\"buyAmount\":89872.759999999995}]},\"transactionId\":\"TRX_e5541a409a2f4aeab98eba23a1dfca52\"}",
+      "stocks": [
+        {
+          "stockName": "HDFCBANK",
+          "transactionType": "BUY",
+          "averagePrice": 973,
+          "qty": 100
+        },
+        {
+          "stockName": "BALRAMCHIN",
+          "transactionType": "BUY",
+          "averagePrice": 559,
+          "qty": 130
+        },
+        {
+          "stockName": "KOTARISUG",
+          "transactionType": "BUY",
+          "averagePrice": 30,
+          "qty": 601
+        },
+        {
+          "stockName": "PEARLPOLY",
+          "transactionType": "BUY",
+          "averagePrice": 32,
+          "qty": 375
+        }
+      ]
+    }
+order: 13000

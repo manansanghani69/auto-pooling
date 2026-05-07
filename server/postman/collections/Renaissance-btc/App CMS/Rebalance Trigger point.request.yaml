@@ -1,0 +1,23 @@
+$kind: http-request
+url: "{{CMS_Url}}/notification/add-rebalance"
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \    \"message\":\"New rebalance is Added\",\r
+
+    \    \"title\":\"New rebalance\",\r
+
+    \    \"subtitle\":\"Alpha Beginners\",\r
+
+    \    \"type\":\"Rebalance\",\r
+
+    \    \"metaData\": {\r
+
+    \    \"basketId\": \"137485e2-b4e1-4fd1-824e-b09f95571766\"\r
+
+    \  }\r
+
+    }"
+order: 15000

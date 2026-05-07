@@ -1,0 +1,15 @@
+$kind: http-request
+url: "{{UAM_Url}}/auth/logout"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: "{\r
+
+    \   \"refresh_token\":\"eyJhbGciOiJIUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJmY2JiODUzMy1kMTU3LTRkYzEtYjBmZi1kYzRmOTQ1YmQ3NzEifQ.eyJleHAiOjE3NTgwODk2NjQsImlhdCI6MTc1ODA4Nzg2NCwianRpIjoiZmNiMWFiOGUtM2M4Yi00OGYxLTlmNDctOTIwZjRmN2Q5N2M4IiwiaXNzIjoiaHR0cDovL2tleWNsb2FrLmtleWNsb2FrLnN2Yy5jbHVzdGVyLmxvY2FsL3JlYWxtcy9BZHZpc29yLUFscGhhIiwiYXVkIjoiaHR0cDovL2tleWNsb2FrLmtleWNsb2FrLnN2Yy5jbHVzdGVyLmxvY2FsL3JlYWxtcy9BZHZpc29yLUFscGhhIiwic3ViIjoiZDY0M2ZlOWMtMmY3YS00ZGNjLTg0MDUtMWE4MDJlNTU0ZTZkIiwidHlwIjoiUmVmcmVzaCIsImF6cCI6ImFkdmlzb3ItYWxwaGEtYmFja2VuZC1jbGllbnQiLCJzZXNzaW9uX3N0YXRlIjoiNzRiYjZmMDktMDM1Yy00ZWRlLWE2MGQtMDVjYjMzZmE2NDk3Iiwic2NvcGUiOiJlbWFpbCBwcm9maWxlIHBob25lIiwic2lkIjoiNzRiYjZmMDktMDM1Yy00ZWRlLWE2MGQtMDVjYjMzZmE2NDk3In0.ys-ERO5P0Pb_wByRVTHSdVJ9ts91r5-otzoVgQJnSfQ\"\r
+
+    }\r\n"
+auth:
+  type: noauth
+order: 3000

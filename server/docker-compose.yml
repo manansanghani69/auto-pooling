@@ -1,7 +1,25 @@
+name: autopool-backend
+
+x-node-build: &node-build
+  context: .
+  dockerfile_inline: |
+    FROM node:22-alpine
+    WORKDIR /app
+    ARG SERVICE_DIR
+    COPY $${SERVICE_DIR}/package*.json ./
+    RUN npm ci --omit=dev
+    COPY $${SERVICE_DIR}/ ./
+    CMD ["npm", "start"]
+
+x-node-healthcheck: &node-healthcheck
+  interval: 10s
+  timeout: 5s
+  retries: 6
+  start_period: 20s
+
 services:
   postgres:
     image: postgres:15
-    container_name: autopool_postgres
     restart: always
     environment:
       POSTGRES_USER: autopool_user
@@ -11,37 +29,213 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U autopool_user -d autopool_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
 
   auth-redis:
     image: redis:7
-    container_name: autopool_auth_redis
     restart: always
     ports:
       - "6380:6379"
     volumes:
       - auth_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
 
   driver-location-redis:
     image: redis:7
-    container_name: autopool_driver_location_redis
     restart: always
     ports:
       - "6381:6379"
     volumes:
       - driver_location_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
 
   request-trip-redis:
     image: redis:7
-    container_name: autopool_request_trip_redis
     restart: always
     ports:
       - "6382:6379"
     volumes:
       - request_trip_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+
+  auth:
+    build:
+      <<: *node-build
+      args:
+        SERVICE_DIR: auth
+    restart: unless-stopped
+    env_file:
+      - ./auth/.env
+    environment:
+      PORT: 4001
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: autopool_user
+      DB_PASS: autopool_pass
+      DB_NAME: autopool_db
+      REDIS_URL: redis://auth-redis:6379
+    ports:
+      - "4001:4001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      auth-redis:
+        condition: service_healthy
+    healthcheck:
+      <<: *node-healthcheck
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:4001/health').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))"
+        ]
+
+  profile:
+    build:
+      <<: *node-build
+      args:
+        SERVICE_DIR: profile
+    restart: unless-stopped
+    env_file:
+      - ./profile/.env
+    environment:
+      PORT: 4002
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: autopool_user
+      DB_PASS: autopool_pass
+      DB_NAME: autopool_db
+    ports:
+      - "4002:4002"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      <<: *node-healthcheck
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:4002/health').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))"
+        ]
+
+  driver-location:
+    build:
+      <<: *node-build
+      args:
+        SERVICE_DIR: driver-location
+    restart: unless-stopped
+    env_file:
+      - ./driver-location/.env
+    environment:
+      PORT: 4003
+      DRIVER_LOCATION_GRPC_PORT: 50051
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: autopool_user
+      DB_PASS: autopool_pass
+      DB_NAME: autopool_db
+      REDIS_URL: redis://driver-location-redis:6379
+    ports:
+      - "4003:4003"
+      - "50051:50051"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      driver-location-redis:
+        condition: service_healthy
+    healthcheck:
+      <<: *node-healthcheck
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:4003/health').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))"
+        ]
+
+  request-trip:
+    build:
+      <<: *node-build
+      args:
+        SERVICE_DIR: request-trip
+    restart: unless-stopped
+    env_file:
+      - ./request-trip/.env
+    environment:
+      PORT: 4004
+      REDIS_URL: redis://request-trip-redis:6379
+      DRIVER_LOCATION_GRPC_ADDRESS: driver-location:50051
+    ports:
+      - "4004:4004"
+    depends_on:
+      request-trip-redis:
+        condition: service_healthy
+      driver-location:
+        condition: service_healthy
+    healthcheck:
+      <<: *node-healthcheck
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:4004/health').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))"
+        ]
+
+  gateway:
+    build:
+      <<: *node-build
+      args:
+        SERVICE_DIR: gateway
+    restart: unless-stopped
+    environment:
+      PORT: 8080
+      AUTH_SERVICE_URL: http://auth:4001
+      PROFILE_SERVICE_URL: http://profile:4002
+      DRIVER_LOCATION_SERVICE_URL: http://driver-location:4003
+      REQUEST_TRIP_SERVICE_URL: http://request-trip:4004
+    ports:
+      - "8080:8080"
+    depends_on:
+      auth:
+        condition: service_healthy
+      profile:
+        condition: service_healthy
+      driver-location:
+        condition: service_healthy
+      request-trip:
+        condition: service_healthy
+    healthcheck:
+      <<: *node-healthcheck
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:8080/health').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))"
+        ]
 
   cloudbeaver:
     image: dbeaver/cloudbeaver:latest
-    container_name: autopool_cloudbeaver
     restart: always
     ports:
       - "8978:8978"

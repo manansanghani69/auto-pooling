@@ -1,0 +1,21 @@
+$kind: http-request
+url: "{{UAM_Url}}/users/register"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: "{\r
+
+    \  \"userId\": 506,\r
+
+    \  \"name\": \"Don No3\",\r
+
+    \  \"email\": \"Donji@gmail.com\"\r
+
+    }\r\n"
+auth:
+  type: bearer
+  credentials:
+    token: eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJlQUZRTThRdERYYjdmRWFmSG54YmRfY2hDTDNJTnQ2RndxQTRDRHhEMzVrIn0.eyJleHAiOjE3NTgxMjc0NjgsImlhdCI6MTc1ODA5MTQ2OCwianRpIjoiOTYzZDY1YzAtYzc1My00MDgyLThkZDMtYTkyZWQ4ZGI4NjRiIiwiaXNzIjoiaHR0cDovL2E4NzIwNjQ5Zjk2ZGQ0ZGY1OWVkNTgyYTkxYjI3NzU1LTk0MjU4Mzg0OS5hcC1zb3V0aC0xLmVsYi5hbWF6b25hd3MuY29tL3JlYWxtcy9BZHZpc29yLUFscGhhIiwiYXVkIjoiYWNjb3VudCIsInN1YiI6ImY1OWRiZGJlLWY0Y2QtNDk4My1iZDI5LTcxNGQyYWEwMjdiZCIsInR5cCI6IkJlYXJlciIsImF6cCI6ImFkdmlzb3ItYWxwaGEtYmFja2VuZC1jbGllbnQiLCJzZXNzaW9uX3N0YXRlIjoiM2ZiNWU2NjMtYjAyNC00ZDExLTg1OGItMzJmZGEyZDljNDliIiwiYWNyIjoiMSIsImFsbG93ZWQtb3JpZ2lucyI6WyIqIl0sInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJvZmZsaW5lX2FjY2VzcyIsInVtYV9hdXRob3JpemF0aW9uIiwiZGVmYXVsdC1yb2xlcy1hZHZpc29yLWFscGhhIiwidXNlciJdfSwicmVzb3VyY2VfYWNjZXNzIjp7ImFjY291bnQiOnsicm9sZXMiOlsibWFuYWdlLWFjY291bnQiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJvZmlsZSJdfX0sInNjb3BlIjoiZW1haWwgcGhvbmUgcHJvZmlsZSIsInNpZCI6IjNmYjVlNjYzLWIwMjQtNGQxMS04NThiLTMyZmRhMmQ5YzQ5YiIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiI4NDM1MTg2NTQzIn0.O1vnSkJI9sG8VLF2xEpL49xCwgpE_H2QoAfKBdT5wAkdakvvPz2xGV-RbZFxKqWJ6i_b29Pr44n48aFrA2Vizsv-8JdSj22D6_UMw0l0sXqLnHxf_xzmXnbsK76Rq-7vLkjnF9WXfHa1sVIJpuz_9nKKOF956sNzDdsepw_Ra07L-CcfifwMnP2cV3FcRHyiz4nrAI-DdS98JRNbPu-bo1YrIgv2KYeqJp86ZAnwamXwsD0_ARuV0LQ4zWg03MmUIcPKmFxOtf5vzs13bULzmxHsjnZDfeqoHxt8dRygAnX9-DgewROqZSAtXPn5W_OvJ-dCld1WbOqvbWN78e21ww
+order: 3000

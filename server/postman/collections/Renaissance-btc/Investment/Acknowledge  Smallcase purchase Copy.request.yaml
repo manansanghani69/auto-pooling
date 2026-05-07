@@ -1,0 +1,39 @@
+$kind: http-request
+description: |
+  Generated from cURL: curl -X POST "http://localhost:3000/subscriptions/enroll" \
+       -H "Content-Type: application/json" \
+       -d '{
+         "userId": 123,
+         "subscriptionPlanId": "uuid-of-plan",
+         "paymentGateway": "RAZORPAY"
+       }'
+url: "{{Portfolio_URL}}/investment/acknowledge-purchase"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+        "transactionId": "TRX_b2ee686c20564268b3e188328c411959",
+        "userId": 331,
+        "basketId": "04c146be-b39d-4885-a73e-c17ed942b8f8",
+        "investmentAmount": 100000.0,
+        "completedDate": "2025-07-31T15:21:16.092Z",
+        "buyAmount": 100000.0,
+        "sellAmount": 0.0,
+        "investmentType": "NEW",
+        "plannedStocks": "{\n    \"investmentDetails\": [\n        {\n            \"stockId\": \"99cddbf7-58b0-4fc3-b932-d3bd74da9346\",\n            \"stockName\": \"AEGISLOG\",\n            \"action\": \"BUY\",\n            \"weightage\": \"100\",\n            \"ltp\": 801.2,\n            \"dividedAmt\": 100000.0,\n            \"qty\": 125\n        }\n    ],\n    \"basketName\": \"Midcap Momentum\",\n    \"logo\": null,\n    \"buyAmount\": 100000.0,\n    \"sellAmount\": 0.0,\n    \"requestId\": \"6b5028b0-b758-4d43-9889-0028e3951970\"\n}",
+        "smallCaseAuthId": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzbWFsbGNhc2VBdXRoSWQiOiI2ODZmNjhkYjI1NGM0OWE0NzVjZjcxMGQiLCJpYXQiOjE3NTM5Nzg0NjMsImV4cCI6MTc1Mzk4MjA2M30.2oVpqIT5nwrMC5eXxyIbxugGLUvD4-bhVnfU1M3SJ3I",
+        "smallCaseResponse": "{\n    \"broker\": \"kite-leprechaun\",\n    \"smallcaseAuthToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzbWFsbGNhc2VBdXRoSWQiOiI2ODZmNjhkYjI1NGM0OWE0NzVjZjcxMGQiLCJpYXQiOjE3NTM5Nzg0NjMsImV4cCI6MTc1Mzk4MjA2M30.2oVpqIT5nwrMC5eXxyIbxugGLUvD4-bhVnfU1M3SJ3I\",\n    \"transactionId\": \"TRX_b2ee686c20564268b3e188328c411959\",\n    \"data\": {\n        \"batches\": [\n            {\n                \"filled\": 1,\n                \"status\": \"COMPLETED\",\n                \"quantity\": 1,\n                \"variety\": \"regular\",\n                \"orders\": [\n                    {\n                        \"status\": \"COMPLETE\",\n                        \"quantity\": 125,\n                        \"product\": \"CNC\",\n                        \"tradingsymbol\": \"AEGISLOG\",\n                        \"exchangeOrderId\": \"6419975959fd1120f87b8df0688b966e9bbf2af0a233c632\",\n                        \"filledQuantity\": 125,\n                        \"averagePrice\": 718.98328,\n                        \"transactionType\": \"BUY\",\n                        \"exchange\": \"NSE\",\n                        \"orderType\": \"MARKET\"\n                    }\n                ],\n                \"batchId\": \"688b966d23a22cfee42c3dca\",\n                \"completedDate\": \"2025-07-31T16:14:41.299Z\",\n                \"sellAmount\": 0.0,\n                \"transactionId\": \"TRX_b2ee686c20564268b3e188328c411959\",\n                \"unplaced\": [],\n                \"buyAmount\": 89872.91\n            }\n        ]\n    },\n    \"success\": true,\n    \"transaction\": \"TRANSACTION\"\n}",
+        "stocks": [
+            {
+                "stockName": "AEGISLOG",
+                "averagePrice": 718.98208,
+                "qty": 125,
+                "transactionType": "BUY"
+            }
+        ],
+        "requestId": "6b5028b0-b758-4d43-9889-0028e3951970"
+    }
+order: 6000

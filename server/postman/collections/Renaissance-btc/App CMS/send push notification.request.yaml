@@ -1,0 +1,21 @@
+$kind: http-request
+url: "{{CMS_Url}}/notification/add-tip-from-eligibility"
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \  \"userId\": 469,\r
+
+    \  \"title\": \"Tips Received\",\r
+
+    \  \"message\": \"Your Got Your tips for that plan\",\r
+
+    \  \"data\": {\r
+
+    \    \"planId\": \"0a85968b-94e8-487c-ae6c-c538c1b7b108\"\r
+
+    \  }\r
+
+    }"
+order: 12000

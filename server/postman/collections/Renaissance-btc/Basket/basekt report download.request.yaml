@@ -1,0 +1,12 @@
+$kind: http-request
+url: "{{Portfolio_URL}}/basket/generate?basketId=4eecff06-a8b0-4cc3-82d2-c95a16c1f375&userId=357"
+method: GET
+queryParams:
+  - key: basketId
+    value: 4eecff06-a8b0-4cc3-82d2-c95a16c1f375
+  - key: ""
+    value: null
+    disabled: true
+  - key: userId
+    value: "357"
+order: 7000

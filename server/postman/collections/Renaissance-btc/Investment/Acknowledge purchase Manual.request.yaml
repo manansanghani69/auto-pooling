@@ -1,0 +1,44 @@
+$kind: http-request
+description: |
+  Generated from cURL: curl -X POST "http://localhost:3000/subscriptions/enroll" \
+       -H "Content-Type: application/json" \
+       -d '{
+         "userId": 123,
+         "subscriptionPlanId": "uuid-of-plan",
+         "paymentGateway": "RAZORPAY"
+       }'
+url: "{{Portfolio_URL}}/investment/acknowledge-purchase"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+        "transactionId": "Manual",
+        "userId": 44,
+        "basketId": "0e3d7e95-06f1-4ae1-9df5-c6f1764cf7db",
+        "investmentAmount": 500000,
+        "completedDate": "2025-07-14T14:46:45.434Z",
+        "buyAmount": 499964.32,
+        "sellAmount": 0,
+        "investmentType": "NEW",
+        "plannedStocks": "{\n    \"investmentDetails\": [\n        {\n            \"stockId\": \"0eeaa4d8-cf40-4f63-9dc9-e8b40928ffa2\",\n            \"stockName\": \"JOCIL\",\n            \"action\": \"BUY\",\n            \"weightage\": \"99.88\",\n            \"ltp\": \"167.14\",\n            \"dividedAmt\": 499399.99999999994,\n            \"qty\": 2988\n        },\n        {\n            \"stockId\": \"1549e64a-db9c-4cec-ae38-5d9d96106d82\",\n            \"stockName\": \"RAMASTEEL\",\n            \"action\": \"BUY\",\n            \"weightage\": \"0.12\",\n            \"ltp\": \"11.95\",\n            \"dividedAmt\": 600,\n            \"qty\": 50\n        }\n    ],\n    \"basketName\": \"Smallcap Stars\",\n    \"logo\": null\n}",
+        "smallCaseAuthId": "",
+        "smallCaseResponse": "Manual",
+        "stocks": [
+            {
+                "stockName": "JOCIL",
+                "averagePrice": 167.14,
+                "qty": 2988,
+                "transactionType": "BUY"
+            },
+            {
+                "stockName": "RAMASTEEL",
+                "averagePrice": 11.95,
+                "qty": 50,
+                "transactionType": "BUY"
+            }
+        ]
+    }
+order: 7000

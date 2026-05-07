@@ -1,0 +1,16 @@
+$kind: http-request
+description: |
+  Generated from cURL: curl -X GET "http://localhost:3000/subscriptions/plans" \
+       -H "Content-Type: application/json"
+url: "{{Portfolio_URL}}/calculations/user-performance-and-weightage"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+        "userId":54,
+        "basketId":"2e81d1f0-d8ce-4702-8a20-e1d1272428c2"
+    }
+order: 4000

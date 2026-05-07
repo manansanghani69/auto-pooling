@@ -1,0 +1,13 @@
+$kind: http-request
+url: "{{CMS_Url}}/notification/register-device"
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \    \"userId\":435,\r
+
+    \    \"fcmDeviceToken\":\"crNQLqVsTZueZgwRVupdoU:APA91bHTXNmbJbQ0t4K7gzyTMilG5S1Weu4mh3P8IBvO0RV6W_3t0H1uL63Gjd5hm32g7IQQ7QLmBzXOZMfTndr26BVZgMx-eJxmy3f2b2y5-RkffgkfoAg\"\r
+
+    }"
+order: 9000

@@ -1,0 +1,22 @@
+$kind: http-request
+description: |
+  Generated from cURL: curl -X POST "http://localhost:3000/subscriptions/enroll" \
+       -H "Content-Type: application/json" \
+       -d '{
+         "userId": 123,
+         "subscriptionPlanId": "uuid-of-plan",
+         "paymentGateway": "RAZORPAY"
+       }'
+url: "{{Portfolio_URL}}/investment/smallcase-transact"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+           "userId": 613,
+           "basketId": "9cfb984f-0870-4f33-a29c-b016bfdab110",
+           "investmentAmount": 20
+    }
+order: 3000

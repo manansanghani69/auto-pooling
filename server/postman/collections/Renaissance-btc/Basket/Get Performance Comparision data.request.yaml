@@ -1,0 +1,19 @@
+$kind: http-request
+description: |
+  Generated from cURL: curl -X GET "http://localhost:3000/subscriptions/plans" \
+       -H "Content-Type: application/json"
+url: "{{Portfolio_URL}}/basket/performance-compare/:basketId?timeframe=ALL"
+method: GET
+headers:
+  Content-Type: application/json
+queryParams:
+  - key: timeframe
+    value: ALL
+    description: Time Frames 1M, 3M, 6M, 1Y, 3Y, ALL
+pathVariables:
+  basketId: 2d023058-d13e-4862-b27c-6dce8a2cfa8f
+auth:
+  type: bearer
+  credentials:
+    token: "{{Token}}"
+order: 2000

@@ -1,0 +1,6 @@
+$kind: http-request
+url: "{{UAM_Url}}/risk-profile/questions/?userId=101"
+method: GET
+queryParams:
+  userId: "101"
+order: 1000

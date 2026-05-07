@@ -1,0 +1,39 @@
+$kind: http-request
+description: |
+  Generated from cURL: curl -X POST "http://localhost:3000/subscriptions/enroll" \
+       -H "Content-Type: application/json" \
+       -d '{
+         "userId": 123,
+         "subscriptionPlanId": "uuid-of-plan",
+         "paymentGateway": "RAZORPAY"
+       }'
+url: "{{Portfolio_URL}}/investment/acknowledge-purchase"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "transactionId": "TRX_08fd864a02c447babc8effbe6b2e7d67",
+      "userId": 613,
+      "basketId": "9cfb984f-0870-4f33-a29c-b016bfdab110",
+      "investmentAmount": 20,
+      "completedDate": "2026-01-15T15:21:16.092Z",
+      "buyAmount": 10.82,
+      "sellAmount": 0,
+      "investmentType": "PARTIAL",
+      "requestId": "request",
+      "plannedStocks": "{\"investmentDetails\":[{\"co_code\":23040,\"logoUrl\":\"https://dev-renaissance-assets.s3.amazonaws.com/stocks-logo/VodafoneIdea_33393045864_23040.png\",\"stockName\":\"IDEA\",\"action\":\"BUY\",\"weightage\":\"38.72\",\"ltp\":10.82,\"dividedAmt\":10.82,\"qty\":1,\"weightageFromInvestment\":100}],\"basketName\":\"EmployeeTest\",\"logo\":null,\"buyAmount\":10.82,\"sellAmount\":0,\"totalWeightage\":38.72,\"totalWeightageInvestment\":100,\"showWarning\":true,\"allocationStrategy\":\"proportional\",\"isPartialInvestment\":false}",
+      "smallCaseAuthId": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+      "smallCaseResponse": "{\"broker\":\"kite-leprechaun\",\"smallcaseAuthToken\":\"...\",\"success\":true,\"transaction\":\"TRANSACTION\",\"data\":{\"batches\":[{\"status\":\"COMPLETED\",\"quantity\":1,\"variety\":\"regular\",\"filled\":1,\"orders\":[{\"status\":\"COMPLETE\",\"product\":\"CNC\",\"quantity\":125,\"tradingsymbol\":\"AEGISLOG\",\"exchangeOrderId\":\"64199759...\",\"averagePrice\":718.98208,\"exchange\":\"NSE\",\"transactionType\":\"BUY\",\"filledQuantity\":125,\"orderType\":\"MARKET\"}],\"batchId\":\"688b951a23a22cfee42c3770\",\"sellAmount\":0,\"completedDate\":\"2025-07-31T16:09:02.157Z\",\"transactionId\":\"TRX_e5541a409a2f4aeab98eba23a1dfca52\",\"unplaced\":[],\"buyAmount\":89872.759999999995}]},\"transactionId\":\"TRX_e5541a409a2f4aeab98eba23a1dfca52\"}",
+      "stocks": [
+        {
+          "stockName": "IDEA",
+          "transactionType": "BUY",
+          "averagePrice": 10.82,
+          "qty": 1
+        }
+      ]
+    }
+order: 5000

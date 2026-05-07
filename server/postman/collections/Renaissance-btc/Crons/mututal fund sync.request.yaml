@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{Cron_Url}}/mf-sync"
+method: GET
+order: 7000

@@ -1,0 +1,19 @@
+$kind: http-request
+url: "{{UAM_Url}}/users/callout/:userId"
+method: POST
+pathVariables:
+  userId: "594"
+body:
+  type: json
+  content: "{\r
+
+    \  \"type\": \"SUBSCRIPTION_RENEWAL\", // e.g. KYC, ESIGN, PORTFOLIO_PAYMENT, SINGLE_STOCK_PAYMENT, SUBSCRIPTION_RENEWAL //GENERAL\r
+
+    \  \"action\": \"DISMISS\" // COMPLETE // TRIGGER // GENERAL //DISMISS\r
+
+    \   //\"planName\": \"Premium Plan\" // only for plans\r
+
+    \   //\"planId\":\"2bc7459f-b676-448d-ae2e-717d20841113\"\r
+
+    }"
+order: 8000

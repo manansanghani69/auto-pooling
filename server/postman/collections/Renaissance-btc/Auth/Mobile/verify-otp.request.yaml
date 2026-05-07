@@ -1,0 +1,23 @@
+$kind: http-request
+url: "{{UAM_Url}}/auth/otp/verify/mobile"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: "{\r
+
+    \  \"countryCode\": \"+91\",\r
+
+    \  \"mobile\": \"7405878652\",\r
+
+    \  \"otp\": \"4483\",\r
+
+    \  \"verificationType\":\"mobile_verification\"\r
+
+    \   // \"verificationType\":\"forget_pin\"\r
+
+    }\r\n"
+auth:
+  type: noauth
+order: 2000

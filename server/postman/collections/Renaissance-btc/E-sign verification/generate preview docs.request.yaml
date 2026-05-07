@@ -1,0 +1,12 @@
+$kind: http-request
+url: "{{KYC_Url}}/esign/generate-doc"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |
+    {
+      "userId":3
+    }
+order: 2000

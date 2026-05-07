@@ -1,0 +1,11 @@
+$kind: http-request
+description: |
+  Generated from cURL: curl -X GET "http://localhost:3000/subscriptions/plans" \
+       -H "Content-Type: application/json"
+url: "{{Portfolio_URL}}/subscriptions/cancel-token?userId=7"
+method: GET
+headers:
+  Content-Type: application/json
+queryParams:
+  userId: "7"
+order: 2000

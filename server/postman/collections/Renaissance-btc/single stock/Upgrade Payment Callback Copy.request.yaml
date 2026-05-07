@@ -1,0 +1,29 @@
+$kind: http-request
+description: |
+  Generated from cURL: curl -X POST "http://localhost:3000/subscriptions/payment/callback" \
+       -H "Content-Type: application/json" \
+       -d '{
+         "userId": "123",
+         "subscriptionId": "456",
+         "paymentGateway": "RAZORPAY",
+         "transactionId": "txn_abc123",
+         "status": "SUCCESS",
+         "amount": "999.99",
+         "responseDetails": "raw_payment_response_or_signature"
+       }'
+url: "{{Portfolio_URL}}/single-stock/upgrade-confirm"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+        "userId": 172,
+        "stockPlanId": "7c03fa38-4be7-42b6-bb5d-255dcd11b0f7",
+        "durationMonths":6,
+        "paymentId":"pay_Qq5znML4Ku9lsj",
+        "orderId":"order_Qq5yRqFfy9V1Pr",
+        "signature":"68a42eff208f789e049f3bc075af96b26d7fc1dbeba74c8691c91b3a6a479dab"
+    }
+order: 9000

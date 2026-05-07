@@ -1,0 +1,20 @@
+name: Prod
+values:
+  - key: UAM_Url
+    enabled: true
+    value: 'http://k8s-renmicroservicesu-45659019c2-1410158702.ap-south-1.elb.amazonaws.com/uam'
+  - key: KYC_Url
+    enabled: true
+    value: 'http://k8s-renmicroservicesu-45659019c2-1410158702.ap-south-1.elb.amazonaws.com/kyc'
+  - key: Portfolio_URL
+    enabled: true
+    value: 'http://k8s-renmicroservicesu-45659019c2-1410158702.ap-south-1.elb.amazonaws.com/portfolio'
+  - key: CMS_Url
+    enabled: true
+    value: 'http://k8s-renmicroservicesu-45659019c2-1410158702.ap-south-1.elb.amazonaws.com/cms'
+  - key: Cron_Url
+    enabled: true
+    value: ''
+  - key: api
+    enabled: true
+    value: ''

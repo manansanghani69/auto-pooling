@@ -1,0 +1,21 @@
+$kind: http-request
+url: "{{UAM_Url}}/mf/users/:userId"
+method: GET
+headers:
+  Content-Type: application/json
+pathVariables:
+  userId: "666"
+body:
+  type: json
+  content: "{\r
+
+    \  \"userId\": 666,\r
+
+    \  \"redirectTo\": \"/investor/dashboard\", // optional\r
+
+    \  \"platform\": \"android\" // 'android' | 'ios'\r
+
+    }\r\n"
+auth:
+  type: noauth
+order: 2000
