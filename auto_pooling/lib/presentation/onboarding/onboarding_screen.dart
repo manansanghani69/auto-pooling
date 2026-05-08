@@ -2,10 +2,13 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../core/services/injection_container.dart';
 import '../../routes.dart';
-import '../../shared_pref/pref_keys.dart';
-import '../../shared_pref/prefs.dart';
+import '../../utils/route_resolver.dart';
+import '../../widgets/app_snack_bar_message.dart';
+import '../../widgets/styling/app_colors.dart';
 import 'bloc/onboarding_bloc.dart';
+import 'bloc/onboarding_state.dart';
 import 'constants/onboarding_constants.dart';
 import 'widgets/onboarding_widgets.dart';
 
@@ -19,57 +22,62 @@ class OnboardingScreen extends StatefulWidget {
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
   late final PageController _pageController;
-  late final OnboardingBloc _onboardingBloc;
 
   @override
   void initState() {
     super.initState();
     _pageController = PageController();
-    _onboardingBloc = OnboardingBloc();
   }
 
   @override
   void dispose() {
     _pageController.dispose();
-    _onboardingBloc.close();
     super.dispose();
-  }
-
-  void _handleContinue() {
-    final int currentPage = _onboardingBloc.state.currentPage;
-    if (currentPage < OnboardingConstants.totalPages - 1) {
-      _pageController.nextPage(
-        duration: OnboardingConstants.pageAnimationDuration,
-        curve: Curves.easeOut,
-      );
-      return;
-    }
-    _completeOnboarding();
-  }
-
-  void _handleSkip() {
-    _completeOnboarding();
-  }
-
-  Future<void> _completeOnboarding() async {
-    await Prefs.setBool(PrefKeys.onboardingCompleted, true);
-    if (!mounted) {
-      return;
-    }
-    context.router.replace(const AuthRoute());
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider<OnboardingBloc>.value(
-      value: _onboardingBloc,
-      child: Scaffold(
-        body: OnboardingBody(
-          pageController: _pageController,
-          onContinue: _handleContinue,
-          onSkip: _handleSkip,
-        ),
+    return BlocProvider<OnboardingBloc>(
+      create: (_) => sl<OnboardingBloc>(),
+      child: BlocListener<OnboardingBloc, OnboardingState>(
+        listenWhen: (previous, current) =>
+            previous.status != current.status ||
+            previous.requestedPage != current.requestedPage ||
+            previous.errorMessage != current.errorMessage,
+        listener: (context, state) {
+          if (state.status == OnboardingStatus.pageAdvanceRequested &&
+              state.requestedPage != null) {
+            _pageController.animateToPage(
+              state.requestedPage!,
+              duration: OnboardingConstants.pageAnimationDuration,
+              curve: Curves.easeOut,
+            );
+            return;
+          }
+          if (state.status == OnboardingStatus.completed) {
+            RouteResolver.resolveNextRoute().then((route) {
+              if (context.mounted) {
+                context.router.replaceAll([route]);
+              }
+            });
+            return;
+          }
+          if (state.status == OnboardingStatus.failure &&
+              state.errorMessage.isNotEmpty) {
+            _showOnboardingSnackBar(context, state.errorMessage);
+          }
+        },
+        child: Scaffold(body: OnboardingBody(pageController: _pageController)),
       ),
     );
   }
+}
+
+void _showOnboardingSnackBar(BuildContext context, String message) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: AppSnackBarMessage(message: message),
+      backgroundColor: context.currentTheme.error,
+    ),
+  );
 }

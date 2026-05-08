@@ -6,4 +6,5 @@ class PrefKeys {
   static const String profileName = 'profile_name';
   static const String profileEmail = 'profile_email';
   static const String profileGender = 'profile_gender';
+  static const String profileCompleted = 'profile_completed';
 }

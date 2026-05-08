@@ -1,10 +1,12 @@
 import 'dart:io';
 
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../common/theme/text_style/app_text_styles.dart';
+import '../../../core/services/injection_container.dart';
 import '../../../i18n/localization.dart';
 import '../../../widgets/app_back_button.dart';
 import '../../../widgets/primary_button.dart';
@@ -20,9 +22,33 @@ class ProfileBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const SafeArea(
+    final bool isLoading = context.select<ProfileBloc, bool>(
+      (bloc) => bloc.state.status == ProfileStatus.loading,
+    );
+
+    return SafeArea(
       top: false,
-      child: ProfileScrollableContent(),
+      child: isLoading
+          ? const ProfileLoadingContent()
+          : const ProfileScrollableContent(),
+    );
+  }
+}
+
+class ProfileLoadingContent extends StatelessWidget {
+  const ProfileLoadingContent({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: SizedBox(
+        height: ProfileConstants.avatarBadgeSize,
+        width: ProfileConstants.avatarBadgeSize,
+        child: CircularProgressIndicator(
+          strokeWidth: 2,
+          color: context.currentTheme.primary,
+        ),
+      ),
     );
   }
 }
@@ -34,7 +60,7 @@ class ProfileAppBar extends StatelessWidget implements PreferredSizeWidget {
   Widget build(BuildContext context) {
     return AppBar(
       automaticallyImplyLeading: false,
-      backgroundColor: Theme.of(context).colorScheme.surface,
+      backgroundColor: context.currentTheme.backgroundPrimary,
       elevation: 0,
       scrolledUnderElevation: 0,
       centerTitle: true,
@@ -191,14 +217,14 @@ class ProfilePhotoPicker extends StatelessWidget {
   Future<void> _openPhotoPicker(BuildContext context) async {
     final ProfilePhotoSource? source =
         await showModalBottomSheet<ProfilePhotoSource>(
-      context: context,
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      builder: (context) => const ProfilePhotoSourceSheet(),
-    );
+          context: context,
+          backgroundColor: context.currentTheme.backgroundPrimary,
+          builder: (context) => const ProfilePhotoSourceSheet(),
+        );
     if (source == null) {
       return;
     }
-    final ImagePicker picker = ImagePicker();
+    final ImagePicker picker = sl<ImagePicker>();
     final XFile? file = await picker.pickImage(
       source: source == ProfilePhotoSource.camera
           ? ImageSource.camera
@@ -208,9 +234,9 @@ class ProfilePhotoPicker extends StatelessWidget {
     if (file == null || !context.mounted) {
       return;
     }
-    context
-        .read<ProfileBloc>()
-        .add(ProfilePhotoChangedEvent(photoPath: file.path));
+    context.read<ProfileBloc>().add(
+      ProfilePhotoChangedEvent(photoPath: file.path),
+    );
   }
 
   @override
@@ -262,15 +288,15 @@ class ProfileAvatarFrame extends StatelessWidget {
       height: ProfileConstants.avatarSize,
       width: ProfileConstants.avatarSize,
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
+        color: context.currentTheme.backgroundPrimary,
         shape: BoxShape.circle,
         border: Border.all(
-          color: Theme.of(context).colorScheme.surface,
+          color: context.currentTheme.backgroundPrimary,
           width: ProfileConstants.avatarBorderWidth,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withAlpha(20),
+            color: context.currentTheme.textNeutralPrimary.withAlpha(20),
             blurRadius: ProfileConstants.avatarShadowBlur,
             offset: const Offset(0, 6),
           ),
@@ -303,10 +329,7 @@ class ProfileAvatarImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Image.file(
-      File(path),
-      fit: BoxFit.cover,
-    );
+    return Image.file(File(path), fit: BoxFit.cover);
   }
 }
 
@@ -347,7 +370,7 @@ class ProfileAvatarCameraBadge extends StatelessWidget {
         color: context.currentTheme.primary,
         shape: BoxShape.circle,
         border: Border.all(
-          color: Theme.of(context).colorScheme.surface,
+          color: context.currentTheme.backgroundPrimary,
           width: ProfileConstants.avatarBadgeBorderWidth,
         ),
       ),
@@ -364,7 +387,7 @@ class ProfileAvatarCameraIcon extends StatelessWidget {
     return Icon(
       Icons.photo_camera,
       size: ProfileConstants.avatarBadgeIconSize,
-      color: Colors.white,
+      color: context.currentTheme.backgroundPrimary,
     );
   }
 }
@@ -419,7 +442,9 @@ class _ProfileNameFieldState extends State<ProfileNameField> {
   @override
   void initState() {
     super.initState();
-    _controller = TextEditingController();
+    _controller = TextEditingController(
+      text: context.read<ProfileBloc>().state.fullName,
+    );
   }
 
   @override
@@ -449,38 +474,37 @@ class _ProfileNameFieldState extends State<ProfileNameField> {
 
   @override
   Widget build(BuildContext context) {
-    final String fullName = context.select<ProfileBloc, String>(
-      (bloc) => bloc.state.fullName,
-    );
-    _syncController(fullName);
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        ProfileFieldLabel(text: context.localization.profileFullNameLabel),
-        const SizedBox(height: ProfileConstants.fieldLabelSpacing),
-        PrimaryTextField(
-          controller: _controller,
-          height: ProfileConstants.inputFieldHeight,
-          textInputAction: TextInputAction.next,
-          textCapitalization: TextCapitalization.words,
-          validator: (value) => _validateName(context, value),
-          onChanged: (value) => context
-              .read<ProfileBloc>()
-              .add(ProfileNameChangedEvent(fullName: value)),
-          hintText: context.localization.profileFullNameHint,
-          textStyle: AppTextStyles.p2Regular.copyWith(
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
+    return BlocListener<ProfileBloc, ProfileState>(
+      listenWhen: (previous, current) => previous.fullName != current.fullName,
+      listener: (context, state) => _syncController(state.fullName),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ProfileFieldLabel(text: context.localization.profileFullNameLabel),
+          const SizedBox(height: ProfileConstants.fieldLabelSpacing),
+          PrimaryTextField(
+            controller: _controller,
+            height: ProfileConstants.inputFieldHeight,
+            textInputAction: TextInputAction.next,
+            textCapitalization: TextCapitalization.words,
+            validator: (value) => _validateName(context, value),
+            onChanged: (value) => context.read<ProfileBloc>().add(
+              ProfileNameChangedEvent(fullName: value),
+            ),
+            hintText: context.localization.profileFullNameHint,
+            textStyle: AppTextStyles.p2Regular.copyWith(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+            ),
+            hintStyle: AppTextStyles.p2Regular.copyWith(
+              color: context.currentTheme.textNeutralSecondary,
+            ),
+            borderRadius: ProfileConstants.inputFieldRadius,
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16.0),
+            suffixIcon: const ProfileFieldSuffixIcon(icon: Icons.person),
           ),
-          hintStyle: AppTextStyles.p2Regular.copyWith(
-            color: context.currentTheme.textNeutralSecondary,
-          ),
-          borderRadius: ProfileConstants.inputFieldRadius,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16.0),
-          suffixIcon: const ProfileFieldSuffixIcon(icon: Icons.person),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -494,13 +518,16 @@ class ProfileEmailField extends StatefulWidget {
 
 class _ProfileEmailFieldState extends State<ProfileEmailField> {
   late final TextEditingController _controller;
-  static final RegExp _emailRegex =
-      RegExp(r'^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$');
+  static final RegExp _emailRegex = RegExp(
+    r'^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$',
+  );
 
   @override
   void initState() {
     super.initState();
-    _controller = TextEditingController();
+    _controller = TextEditingController(
+      text: context.read<ProfileBloc>().state.email,
+    );
   }
 
   @override
@@ -533,40 +560,39 @@ class _ProfileEmailFieldState extends State<ProfileEmailField> {
 
   @override
   Widget build(BuildContext context) {
-    final String email = context.select<ProfileBloc, String>(
-      (bloc) => bloc.state.email,
-    );
-    _syncController(email);
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        ProfileFieldLabel(text: context.localization.profileEmailLabel),
-        const SizedBox(height: ProfileConstants.fieldLabelSpacing),
-        PrimaryTextField(
-          controller: _controller,
-          height: ProfileConstants.inputFieldHeight,
-          keyboardType: TextInputType.emailAddress,
-          textInputAction: TextInputAction.done,
-          autocorrect: false,
-          enableSuggestions: false,
-          validator: (value) => _validateEmail(context, value),
-          onChanged: (value) => context
-              .read<ProfileBloc>()
-              .add(ProfileEmailChangedEvent(email: value)),
-          hintText: context.localization.profileEmailHint,
-          textStyle: AppTextStyles.p2Regular.copyWith(
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
+    return BlocListener<ProfileBloc, ProfileState>(
+      listenWhen: (previous, current) => previous.email != current.email,
+      listener: (context, state) => _syncController(state.email),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ProfileFieldLabel(text: context.localization.profileEmailLabel),
+          const SizedBox(height: ProfileConstants.fieldLabelSpacing),
+          PrimaryTextField(
+            controller: _controller,
+            height: ProfileConstants.inputFieldHeight,
+            keyboardType: TextInputType.emailAddress,
+            textInputAction: TextInputAction.done,
+            autocorrect: false,
+            enableSuggestions: false,
+            validator: (value) => _validateEmail(context, value),
+            onChanged: (value) => context.read<ProfileBloc>().add(
+              ProfileEmailChangedEvent(email: value),
+            ),
+            hintText: context.localization.profileEmailHint,
+            textStyle: AppTextStyles.p2Regular.copyWith(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+            ),
+            hintStyle: AppTextStyles.p2Regular.copyWith(
+              color: context.currentTheme.textNeutralSecondary,
+            ),
+            borderRadius: ProfileConstants.inputFieldRadius,
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16.0),
+            suffixIcon: const ProfileFieldSuffixIcon(icon: Icons.mail),
           ),
-          hintStyle: AppTextStyles.p2Regular.copyWith(
-            color: context.currentTheme.textNeutralSecondary,
-          ),
-          borderRadius: ProfileConstants.inputFieldRadius,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16.0),
-          suffixIcon: const ProfileFieldSuffixIcon(icon: Icons.mail),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -696,34 +722,33 @@ class ProfileGenderOption extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ProfileGender? selectedGender =
-        context.select<ProfileBloc, ProfileGender?>(
-      (bloc) => bloc.state.gender,
-    );
+    final ProfileGender? selectedGender = context
+        .select<ProfileBloc, ProfileGender?>((bloc) => bloc.state.gender);
     final bool isSelected = selectedGender == gender;
     final Color borderColor = isSelected
         ? context.currentTheme.primary
         : context.currentTheme.textNeutralSecondary.withAlpha(51);
     final Color backgroundColor = isSelected
         ? context.currentTheme.primary.withAlpha(20)
-        : Theme.of(context).colorScheme.surface;
+        : context.currentTheme.backgroundPrimary;
     final Color foregroundColor = isSelected
         ? context.currentTheme.primary
         : context.currentTheme.textNeutralPrimary;
 
     return Material(
-      color: Colors.transparent,
+      color: context.currentTheme.backgroundPrimary.withAlpha(0),
       child: InkWell(
         borderRadius: BorderRadius.circular(ProfileConstants.inputFieldRadius),
-        onTap: () => context
-            .read<ProfileBloc>()
-            .add(ProfileGenderChangedEvent(gender: gender)),
+        onTap: () => context.read<ProfileBloc>().add(
+          ProfileGenderChangedEvent(gender: gender),
+        ),
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 12.0),
           decoration: BoxDecoration(
             color: backgroundColor,
-            borderRadius:
-                BorderRadius.circular(ProfileConstants.inputFieldRadius),
+            borderRadius: BorderRadius.circular(
+              ProfileConstants.inputFieldRadius,
+            ),
             border: Border.all(color: borderColor, width: 1.5),
           ),
           child: Column(
@@ -744,11 +769,7 @@ class ProfileGenderIcon extends StatelessWidget {
   final IconData icon;
   final Color color;
 
-  const ProfileGenderIcon({
-    required this.icon,
-    required this.color,
-    super.key,
-  });
+  const ProfileGenderIcon({required this.icon, required this.color, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -785,7 +806,7 @@ class ProfileBottomBar extends StatelessWidget {
       top: false,
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
+          color: context.currentTheme.backgroundPrimary,
           border: Border(
             top: BorderSide(
               color: context.currentTheme.textNeutralSecondary.withAlpha(51),
@@ -797,6 +818,8 @@ class ProfileBottomBar extends StatelessWidget {
           child: const Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              ProfileSavingIndicator(),
+              ProfileBottomBarSpacing(),
               ProfileContinueButton(),
               SizedBox(height: ProfileConstants.bottomBarSpacing),
               ProfileTermsText(),
@@ -808,12 +831,49 @@ class ProfileBottomBar extends StatelessWidget {
   }
 }
 
+class ProfileSavingIndicator extends StatelessWidget {
+  const ProfileSavingIndicator({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final bool isSaving = context.select<ProfileBloc, bool>(
+      (bloc) => bloc.state.status == ProfileStatus.saving,
+    );
+    if (!isSaving) {
+      return const SizedBox.shrink();
+    }
+    return SizedBox(
+      height: ProfileConstants.avatarBadgeIconSize,
+      width: ProfileConstants.avatarBadgeIconSize,
+      child: CircularProgressIndicator(
+        strokeWidth: 2,
+        color: context.currentTheme.primary,
+      ),
+    );
+  }
+}
+
+class ProfileBottomBarSpacing extends StatelessWidget {
+  const ProfileBottomBarSpacing({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final bool isSaving = context.select<ProfileBloc, bool>(
+      (bloc) => bloc.state.status == ProfileStatus.saving,
+    );
+    if (!isSaving) {
+      return const SizedBox.shrink();
+    }
+    return const SizedBox(height: ProfileConstants.bottomBarSpacing);
+  }
+}
+
 class ProfileContinueButton extends StatelessWidget {
   const ProfileContinueButton({super.key});
 
   void _handleTap(BuildContext context) {
-    final FormState? formState = Form.of(context);
-    if (formState == null || !formState.validate()) {
+    final FormState formState = Form.of(context);
+    if (!formState.validate()) {
       return;
     }
     context.read<ProfileBloc>().add(const ProfileContinuePressedEvent());
@@ -878,10 +938,7 @@ class ProfileTermsText extends StatelessWidget {
   }
 }
 
-enum ProfilePhotoSource {
-  camera,
-  gallery,
-}
+enum ProfilePhotoSource { camera, gallery }
 
 class ProfilePhotoSourceSheet extends StatelessWidget {
   const ProfilePhotoSourceSheet({super.key});
@@ -927,15 +984,16 @@ class ProfilePhotoSourceOption extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.transparent,
+      color: context.currentTheme.backgroundPrimary.withAlpha(0),
       child: InkWell(
         borderRadius: BorderRadius.circular(ProfileConstants.inputFieldRadius),
-        onTap: () => Navigator.of(context).pop(source),
+        onTap: () => context.router.maybePop(source),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 14.0),
           decoration: BoxDecoration(
-            borderRadius:
-                BorderRadius.circular(ProfileConstants.inputFieldRadius),
+            borderRadius: BorderRadius.circular(
+              ProfileConstants.inputFieldRadius,
+            ),
             border: Border.all(
               color: context.currentTheme.textNeutralSecondary.withAlpha(51),
             ),
@@ -960,11 +1018,7 @@ class ProfilePhotoSourceIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Icon(
-      icon,
-      color: context.currentTheme.primary,
-      size: 22,
-    );
+    return Icon(icon, color: context.currentTheme.primary, size: 22);
   }
 }
 

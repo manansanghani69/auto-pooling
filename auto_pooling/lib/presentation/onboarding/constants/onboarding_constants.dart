@@ -40,9 +40,8 @@ class OnboardingConstants {
   static const double badgeLabelLetterSpacing = 1.2;
   static const double badgeLabelSpacing = 2.0;
 
-  static const Duration indicatorAnimationDuration = Duration(milliseconds: 250);
+  static const Duration indicatorAnimationDuration = Duration(
+    milliseconds: 250,
+  );
   static const Duration pageAnimationDuration = Duration(milliseconds: 300);
-
-  static const String heroImageUrl =
-      'https://lh3.googleusercontent.com/aida-public/AB6AXuAGFXUDo3LSr3kNqsNt5jovqGssMt0tZdUZMcn8FwseklHRmG0Y9P0yjwVBxYTrwnLX_3D6skdrMRIHuRn-bcYzYcllf-XkZYKKATA4Vzxie-ySPm66Kvpq156-N9JugBOMLOeikjtFYrvaTuscV2EVCw5ibTovoHlEiubilm8tR7E38QP0F3MZOFro0PI276Bw1vlF0jJjun2TbywZlNpG1hFHa0br34QTWv1KPeI_TQ88EyFE4Yqbwf1kw-obE03FsL1R0YUMTrA';
 }

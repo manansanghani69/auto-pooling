@@ -1,49 +1,53 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../core/services/injection_container.dart';
 import '../../routes.dart';
-import '../../shared_pref/pref_keys.dart';
-import '../../shared_pref/prefs.dart';
-import 'constants/splash_constants.dart';
+import 'bloc/splash_bloc.dart';
+import 'bloc/splash_event.dart';
+import 'bloc/splash_state.dart';
 import 'widgets/splash_widgets.dart';
 
 @RoutePage()
-class SplashScreen extends StatefulWidget {
+class SplashScreen extends StatelessWidget {
   const SplashScreen({super.key});
 
   @override
-  State<SplashScreen> createState() => _SplashScreenState();
-}
-
-class _SplashScreenState extends State<SplashScreen> {
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _navigateFromSplash();
-    });
-  }
-
-  Future<void> _navigateFromSplash() async {
-    await Future.delayed(SplashConstants.navigationDelay);
-    if (!mounted) {
-      return;
-    }
-    final bool hasCompletedOnboarding =
-        await Prefs.getBool(PrefKeys.onboardingCompleted) ?? false;
-    if (!mounted) {
-      return;
-    }
-    final PageRouteInfo<void> nextRoute = const OnboardingRoute();
-    // final PageRouteInfo<void> nextRoute = hasCompletedOnboarding
-    //     ? const AuthRoute()
-    //     : const OnboardingRoute();
-    context.router.replace(nextRoute);
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return Scaffold(body: const SplashBody());
+    return BlocProvider<SplashBloc>(
+      create: (_) => sl<SplashBloc>()..add(const SplashStartedEvent()),
+      child: BlocListener<SplashBloc, SplashState>(
+        listenWhen: (previous, current) =>
+            previous.status != current.status ||
+            previous.destination != current.destination,
+        listener: (context, state) {
+          if (state.status != SplashStatus.resolved) {
+            return;
+          }
+          final PageRouteInfo<dynamic> route = _routeForDestination(
+            state.destination,
+          );
+          context.router.replace(route);
+        },
+        child: const Scaffold(body: SplashBody()),
+      ),
+    );
+  }
+
+  PageRouteInfo<dynamic> _routeForDestination(SplashDestination? destination) {
+    switch (destination) {
+      case SplashDestination.onboarding:
+        return const OnboardingRoute();
+      case SplashDestination.auth:
+        return const AuthRoute();
+      case SplashDestination.profile:
+        return ProfileRoute();
+      case SplashDestination.home:
+        return const HomeRoute();
+      case null:
+        return const AuthRoute();
+    }
   }
 }
 

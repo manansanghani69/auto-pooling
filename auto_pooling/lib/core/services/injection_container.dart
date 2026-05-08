@@ -2,16 +2,21 @@ import 'dart:developer';
 
 import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../presentation/auth/data/datasources/auth_remote_data_source.dart';
 import '../../presentation/auth/data/repositories/auth_repository_impl.dart';
 import '../../presentation/auth/domain/repositories/auth_repository.dart';
 import '../../presentation/auth/domain/usecases/auth_usecase.dart';
+import '../../presentation/auth/bloc/auth_bloc.dart';
+import '../../presentation/onboarding/bloc/onboarding_bloc.dart';
 import '../../presentation/profile/data/datasources/profile_remote_data_source.dart';
 import '../../presentation/profile/data/repositories/profile_repository_impl.dart';
 import '../../presentation/profile/domain/repositories/profile_repository.dart';
 import '../../presentation/profile/domain/usecases/profile_usecase.dart';
+import '../../presentation/profile/bloc/profile_bloc.dart';
+import '../../presentation/splash/bloc/splash_bloc.dart';
 import '../../shared_pref/pref_keys.dart';
 import '../../shared_pref/prefs.dart';
 import '../../utils/app_flavor_env.dart';
@@ -26,6 +31,8 @@ Future<void> configureDependencies({
   _configureNetwork();
   _configureAuth();
   _configureProfile();
+  _configurePresentationServices();
+  _configurePresentationBlocs();
 }
 
 Future<void> _configureSharedPreferences(
@@ -54,9 +61,7 @@ void _configureNetwork() {
     ),
   );
   dio.interceptors.add(
-    ApiLoggerInterceptor(
-      logPrint: (message) => log(message),
-    ),
+    ApiLoggerInterceptor(logPrint: (message) => log(message)),
   );
 
   if (sl.isRegistered<Dio>()) {
@@ -88,9 +93,12 @@ void _configureAuth() {
   if (sl.isRegistered<AuthUseCase>()) {
     sl.unregister<AuthUseCase>();
   }
-  sl.registerLazySingleton<AuthUseCase>(
-    () => AuthUseCase(repository: sl()),
-  );
+  sl.registerLazySingleton<AuthUseCase>(() => AuthUseCase(repository: sl()));
+
+  if (sl.isRegistered<AuthBloc>()) {
+    sl.unregister<AuthBloc>();
+  }
+  sl.registerFactory<AuthBloc>(() => AuthBloc(authUseCase: sl()));
 }
 
 void _configureProfile() {
@@ -114,4 +122,28 @@ void _configureProfile() {
   sl.registerLazySingleton<ProfileUseCase>(
     () => ProfileUseCase(repository: sl()),
   );
+}
+
+void _configurePresentationBlocs() {
+  if (sl.isRegistered<ProfileBloc>()) {
+    sl.unregister<ProfileBloc>();
+  }
+  sl.registerFactory<ProfileBloc>(() => ProfileBloc(profileUseCase: sl()));
+
+  if (sl.isRegistered<OnboardingBloc>()) {
+    sl.unregister<OnboardingBloc>();
+  }
+  sl.registerFactory<OnboardingBloc>(OnboardingBloc.new);
+
+  if (sl.isRegistered<SplashBloc>()) {
+    sl.unregister<SplashBloc>();
+  }
+  sl.registerFactory<SplashBloc>(SplashBloc.new);
+}
+
+void _configurePresentationServices() {
+  if (sl.isRegistered<ImagePicker>()) {
+    sl.unregister<ImagePicker>();
+  }
+  sl.registerLazySingleton<ImagePicker>(ImagePicker.new);
 }
