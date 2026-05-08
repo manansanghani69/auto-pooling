@@ -18,10 +18,7 @@ class AuthPhoneHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Align(
-      alignment: Alignment.centerLeft,
-      child: AppBackButton(),
-    );
+    return const Align(alignment: Alignment.centerLeft, child: AppBackButton());
   }
 }
 
@@ -107,10 +104,7 @@ class AuthHeroAccentCircle extends StatelessWidget {
     return Container(
       height: AuthConstants.heroAccentSize,
       width: AuthConstants.heroAccentSize,
-      decoration: BoxDecoration(
-        color: color,
-        shape: BoxShape.circle,
-      ),
+      decoration: BoxDecoration(color: color, shape: BoxShape.circle),
     );
   }
 }
@@ -162,9 +156,7 @@ class AuthPhoneHeadlineText extends StatelessWidget {
         children: [
           TextSpan(
             text: context.localization.authPhoneTitleHighlight,
-            style: baseStyle.copyWith(
-              color: context.currentTheme.primary,
-            ),
+            style: baseStyle.copyWith(color: context.currentTheme.primary),
           ),
         ],
       ),
@@ -251,7 +243,7 @@ class AuthCountryCodeSelector extends StatelessWidget {
       height: 48,
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
+          color: context.currentTheme.backgroundPrimary,
           borderRadius: BorderRadius.circular(AuthConstants.inputFieldRadius),
           border: Border.all(
             color: context.currentTheme.textNeutralSecondary.withAlpha(51),
@@ -332,8 +324,8 @@ class AuthPhoneNumberField extends StatelessWidget {
           textInputAction: TextInputAction.done,
           validator: (value) => _validatePhoneNumber(context, value),
           onChanged: (value) => context.read<AuthBloc>().add(
-                AuthPhoneNumberChangedEvent(phoneNumber: value.trim()),
-              ),
+            AuthPhoneNumberChangedEvent(phoneNumber: value.trim()),
+          ),
           inputFormatters: [
             FilteringTextInputFormatter.digitsOnly,
             LengthLimitingTextInputFormatter(AuthConstants.phoneNumberLength),
@@ -374,8 +366,8 @@ class AuthGetOtpButton extends StatelessWidget {
   const AuthGetOtpButton({super.key});
 
   void _handleTap(BuildContext context) {
-    final FormState? formState = Form.of(context);
-    if (formState == null || !formState.validate()) {
+    final FormState formState = Form.of(context);
+    if (!formState.validate()) {
       return;
     }
     context.read<AuthBloc>().add(const AuthRequestOtpEvent());
@@ -387,14 +379,51 @@ class AuthGetOtpButton extends StatelessWidget {
       (bloc) => bloc.state.status == AuthStatus.requestingOtp,
     );
 
+    if (isLoading) {
+      return const AuthLoadingPrimaryButton(
+        height: AuthConstants.primaryButtonHeight,
+      );
+    }
     return PrimaryButton(
-      onPressed: isLoading ? null : () => _handleTap(context),
+      onPressed: () => _handleTap(context),
       buttonText: context.localization.authGetOtpButton,
       icon: Icons.arrow_forward,
       height: AuthConstants.primaryButtonHeight,
       textStyle: AppTextStyles.p2Regular.copyWith(
         fontWeight: FontWeight.w600,
         fontSize: 18,
+      ),
+    );
+  }
+}
+
+class AuthLoadingPrimaryButton extends StatelessWidget {
+  final double height;
+
+  const AuthLoadingPrimaryButton({required this.height, super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: height,
+      width: double.infinity,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: context.currentTheme.primary,
+          borderRadius: BorderRadius.circular(
+            AuthConstants.primaryButtonRadius,
+          ),
+        ),
+        child: Center(
+          child: SizedBox(
+            height: AuthConstants.countryCodeIconSize,
+            width: AuthConstants.countryCodeIconSize,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: context.currentTheme.backgroundPrimary,
+            ),
+          ),
+        ),
       ),
     );
   }

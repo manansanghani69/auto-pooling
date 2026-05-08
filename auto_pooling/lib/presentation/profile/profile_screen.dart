@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../core/services/injection_container.dart';
 import '../../routes.dart';
+import '../../utils/route_resolver.dart';
 import '../../widgets/app_snack_bar_message.dart';
 import '../../widgets/styling/app_colors.dart';
 import 'bloc/profile_bloc.dart';
@@ -21,15 +22,18 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider<ProfileBloc>(
       create: (_) =>
-          ProfileBloc(profileUseCase: sl())
-            ..add(ProfileStartedEvent(isEditing: isEditing)),
+          sl<ProfileBloc>()..add(ProfileStartedEvent(isEditing: isEditing)),
       child: BlocListener<ProfileBloc, ProfileState>(
         listenWhen: (previous, current) =>
             previous.status != current.status ||
             previous.errorMessage != current.errorMessage,
         listener: (context, state) {
           if (state.status == ProfileStatus.saved) {
-            context.router.replaceAll([const HomeRoute()]);
+            RouteResolver.resolveNextRoute().then((route) {
+              if (context.mounted) {
+                context.router.replaceAll([route]);
+              }
+            });
             return;
           }
           if (state.errorMessage.isNotEmpty) {
@@ -59,11 +63,15 @@ class ProfileScreenScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Form(
-      child: Scaffold(
-        appBar: ProfileAppBar(),
-        body: ProfileBody(),
-        bottomNavigationBar: ProfileBottomBar(),
+    return Form(
+      child: GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onTap: FocusManager.instance.primaryFocus?.unfocus,
+        child: const Scaffold(
+          appBar: ProfileAppBar(),
+          body: ProfileBody(),
+          bottomNavigationBar: ProfileBottomBar(),
+        ),
       ),
     );
   }

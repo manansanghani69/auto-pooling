@@ -11,17 +11,17 @@ import '../models/auth_model.dart';
 class AuthRepositoryImpl implements AuthRepository {
   final AuthRemoteDataSource _remoteDataSource;
 
-  const AuthRepositoryImpl({
-    required AuthRemoteDataSource remoteDataSource,
-  }) : _remoteDataSource = remoteDataSource;
+  const AuthRepositoryImpl({required AuthRemoteDataSource remoteDataSource})
+    : _remoteDataSource = remoteDataSource;
 
   @override
   ResultFuture<OtpRequestEntity> requestOtp({
     required String phoneNumber,
   }) async {
     try {
-      final result =
-          await _remoteDataSource.requestOtp(phoneNumber: phoneNumber);
+      final result = await _remoteDataSource.requestOtp(
+        phoneNumber: phoneNumber,
+      );
       return Result.success(result.toEntity());
     } on APIException catch (exception) {
       return Result.failure(APIFailure.fromException(exception));
@@ -57,14 +57,10 @@ class AuthRepositoryImpl implements AuthRepository {
       final refreshToken = await Prefs.getString(PrefKeys.refreshToken) ?? '';
       if (refreshToken.isEmpty) {
         return const Result.failure(
-          APIFailure(
-            errorMessage: 'Missing refresh token',
-            statusCode: 400,
-          ),
+          APIFailure(errorMessage: 'Missing refresh token', statusCode: 400),
         );
       }
-      final result =
-          await _remoteDataSource.logout(refreshToken: refreshToken);
+      final result = await _remoteDataSource.logout(refreshToken: refreshToken);
       await _clearAuth();
       return Result.success(result.toEntity());
     } on APIException catch (exception) {
@@ -86,6 +82,9 @@ class AuthRepositoryImpl implements AuthRepository {
     }
     if (result.user.name.isNotEmpty) {
       await Prefs.setString(PrefKeys.profileName, result.user.name);
+      await Prefs.setBool(PrefKeys.profileCompleted, true);
+    } else {
+      await Prefs.setBool(PrefKeys.profileCompleted, false);
     }
   }
 
@@ -96,5 +95,6 @@ class AuthRepositoryImpl implements AuthRepository {
     await Prefs.remove(PrefKeys.profileName);
     await Prefs.remove(PrefKeys.profileEmail);
     await Prefs.remove(PrefKeys.profileGender);
+    await Prefs.remove(PrefKeys.profileCompleted);
   }
 }

@@ -18,7 +18,7 @@ class AuthScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider<AuthBloc>(
-      create: (_) => AuthBloc(authUseCase: sl()),
+      create: (_) => sl<AuthBloc>(),
       child: BlocListener<AuthBloc, AuthState>(
         listenWhen: (previous, current) =>
             previous.status != current.status ||
@@ -29,9 +29,7 @@ class AuthScreen extends StatelessWidget {
             return;
           }
           if (state.status == AuthStatus.otpRequested) {
-            context.pushRoute(
-              AuthOtpRoute(authBloc: context.read<AuthBloc>()),
-            );
+            context.pushRoute(AuthOtpRoute(authBloc: context.read<AuthBloc>()));
             return;
           }
           if (state.status == AuthStatus.failure &&
@@ -39,9 +37,7 @@ class AuthScreen extends StatelessWidget {
             _showAuthSnackBar(context, state.errorMessage);
           }
         },
-        child: const Scaffold(
-          body: AuthPhoneBody(),
-        ),
+        child: const Scaffold(body: AuthPhoneBody()),
       ),
     );
   }
@@ -52,24 +48,28 @@ class AuthPhoneBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AuthConstants.horizontalPadding,
-        ),
-        child: const Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(height: AuthConstants.headerTopPadding),
-            AuthPhoneHeader(),
-            SizedBox(height: AuthConstants.sectionSpacing),
-            AuthHeroCard(),
-            SizedBox(height: AuthConstants.sectionSpacing),
-            AuthPhoneHeadlineSection(),
-            SizedBox(height: AuthConstants.sectionSpacing),
-            AuthPhoneFormSection(),
-            SizedBox(height: AuthConstants.bottomSpacing),
-          ],
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onTap: FocusManager.instance.primaryFocus?.unfocus,
+      child: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AuthConstants.horizontalPadding,
+          ),
+          child: const Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(height: AuthConstants.headerTopPadding),
+              AuthPhoneHeader(),
+              SizedBox(height: AuthConstants.sectionSpacing),
+              AuthHeroCard(),
+              SizedBox(height: AuthConstants.sectionSpacing),
+              AuthPhoneHeadlineSection(),
+              SizedBox(height: AuthConstants.sectionSpacing),
+              AuthPhoneFormSection(),
+              SizedBox(height: AuthConstants.bottomSpacing),
+            ],
+          ),
         ),
       ),
     );

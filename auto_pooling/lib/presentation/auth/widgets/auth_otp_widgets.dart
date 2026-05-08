@@ -19,10 +19,7 @@ class AuthOtpHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Align(
-      alignment: Alignment.centerLeft,
-      child: AppBackButton(),
-    );
+    return const Align(alignment: Alignment.centerLeft, child: AppBackButton());
   }
 }
 
@@ -131,7 +128,7 @@ class AuthOtpEditButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return TextButton(
-      onPressed: () => context.router.pop(),
+      onPressed: () => context.router.maybePop(),
       style: TextButton.styleFrom(
         padding: EdgeInsets.zero,
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -326,7 +323,7 @@ class AuthOtpPinputField extends StatelessWidget {
         color: context.currentTheme.textNeutralPrimary,
       ),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
+        color: context.currentTheme.backgroundPrimary,
         borderRadius: BorderRadius.circular(AuthConstants.otpDigitRadius),
         border: Border.all(color: borderColor, width: 2),
         boxShadow: glowColor == null
@@ -382,6 +379,9 @@ class AuthOtpTimerChip extends StatelessWidget {
       (bloc) => bloc.state.otpSecondsRemaining,
     );
     final String timerText = _formatTimer(secondsRemaining);
+    final bool isRequestingOtp = context.select<AuthBloc, bool>(
+      (bloc) => bloc.state.status == AuthStatus.requestingOtp,
+    );
 
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -396,7 +396,9 @@ class AuthOtpTimerChip extends StatelessWidget {
           horizontal: AuthConstants.otpTimerPaddingHorizontal,
           vertical: AuthConstants.otpTimerPaddingVertical,
         ),
-        child: secondsRemaining == 0
+        child: isRequestingOtp
+            ? const AuthOtpTimerLoadingIndicator()
+            : secondsRemaining == 0
             ? AuthOtpResendAction(
                 onPressed: () =>
                     context.read<AuthBloc>().add(const AuthRequestOtpEvent()),
@@ -418,6 +420,22 @@ class AuthOtpTimerChip extends StatelessWidget {
                   ],
                 ),
               ),
+      ),
+    );
+  }
+}
+
+class AuthOtpTimerLoadingIndicator extends StatelessWidget {
+  const AuthOtpTimerLoadingIndicator({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: AuthConstants.countryCodeIconSize,
+      width: AuthConstants.countryCodeIconSize,
+      child: CircularProgressIndicator(
+        strokeWidth: 2,
+        color: context.currentTheme.primary,
       ),
     );
   }
@@ -462,17 +480,51 @@ class AuthOtpVerifyButton extends StatelessWidget {
 
     return SafeArea(
       child: Padding(
-        padding: EdgeInsetsGeometry.symmetric(horizontal: 24),
-        child: PrimaryButton(
-          onPressed: isVerifying || !isOtpComplete
-              ? null
-              : () => context.read<AuthBloc>().add(const AuthVerifyOtpEvent()),
-          buttonText: context.localization.authOtpVerifyButton,
-          icon: Icons.check_circle,
-          height: AuthConstants.primaryButtonHeight,
-          textStyle: AppTextStyles.p2Regular.copyWith(
-            fontWeight: FontWeight.w600,
-            fontSize: 18,
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: isVerifying
+            ? const AuthOtpVerifyLoadingButton()
+            : PrimaryButton(
+                onPressed: isOtpComplete
+                    ? () => context.read<AuthBloc>().add(
+                        const AuthVerifyOtpEvent(),
+                      )
+                    : null,
+                buttonText: context.localization.authOtpVerifyButton,
+                icon: Icons.check_circle,
+                height: AuthConstants.primaryButtonHeight,
+                textStyle: AppTextStyles.p2Regular.copyWith(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 18,
+                ),
+              ),
+      ),
+    );
+  }
+}
+
+class AuthOtpVerifyLoadingButton extends StatelessWidget {
+  const AuthOtpVerifyLoadingButton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: AuthConstants.primaryButtonHeight,
+      width: double.infinity,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: context.currentTheme.primary,
+          borderRadius: BorderRadius.circular(
+            AuthConstants.primaryButtonRadius,
+          ),
+        ),
+        child: Center(
+          child: SizedBox(
+            height: AuthConstants.countryCodeIconSize,
+            width: AuthConstants.countryCodeIconSize,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: context.currentTheme.backgroundPrimary,
+            ),
           ),
         ),
       ),

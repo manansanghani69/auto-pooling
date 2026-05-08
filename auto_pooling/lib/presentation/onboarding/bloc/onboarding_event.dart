@@ -7,3 +7,11 @@ class OnboardingPageChangedEvent extends OnboardingEvent {
 
   const OnboardingPageChangedEvent({required this.index});
 }
+
+class OnboardingContinuePressedEvent extends OnboardingEvent {
+  const OnboardingContinuePressedEvent();
+}
+
+class OnboardingSkipPressedEvent extends OnboardingEvent {
+  const OnboardingSkipPressedEvent();
+}
