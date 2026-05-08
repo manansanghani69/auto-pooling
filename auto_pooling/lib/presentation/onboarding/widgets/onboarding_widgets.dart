@@ -7,17 +7,18 @@ import '../../../i18n/localization.dart';
 import '../../../widgets/styling/app_colors.dart';
 import '../bloc/onboarding_bloc.dart';
 import '../bloc/onboarding_event.dart';
+import '../bloc/onboarding_state.dart';
 import '../constants/onboarding_constants.dart';
 
 class OnboardingBody extends StatelessWidget {
   final PageController pageController;
-  final VoidCallback onSkip;
-  final VoidCallback onContinue;
+  final VoidCallback? onSkip;
+  final VoidCallback? onContinue;
 
   const OnboardingBody({
     required this.pageController,
-    required this.onSkip,
-    required this.onContinue,
+    this.onSkip,
+    this.onContinue,
     super.key,
   });
 
@@ -36,9 +37,9 @@ class OnboardingBody extends StatelessWidget {
 }
 
 class OnboardingHeader extends StatelessWidget {
-  final VoidCallback onSkip;
+  final VoidCallback? onSkip;
 
-  const OnboardingHeader({required this.onSkip, super.key});
+  const OnboardingHeader({this.onSkip, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -58,14 +59,18 @@ class OnboardingHeader extends StatelessWidget {
 }
 
 class OnboardingSkipButton extends StatelessWidget {
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
 
-  const OnboardingSkipButton({required this.onPressed, super.key});
+  const OnboardingSkipButton({this.onPressed, super.key});
 
   @override
   Widget build(BuildContext context) {
     return TextButton(
-      onPressed: onPressed,
+      onPressed:
+          onPressed ??
+          () => context.read<OnboardingBloc>().add(
+            const OnboardingSkipPressedEvent(),
+          ),
       style: TextButton.styleFrom(
         padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
         foregroundColor: context.currentTheme.textNeutralSecondary,
@@ -125,7 +130,6 @@ class OnboardingPageOne extends StatelessWidget {
       badgeLabel: context.localization.onboardingBadgeSavedLabel,
       badgeValue: context.localization.onboardingBadgeSavedValue,
       badgeIcon: Icons.savings,
-      imageUrl: OnboardingConstants.heroImageUrl,
     );
   }
 }
@@ -141,7 +145,6 @@ class OnboardingPageTwo extends StatelessWidget {
       badgeLabel: context.localization.onboardingBadgeYourRide,
       badgeValue: context.localization.onboardingBadgeYourRideValue,
       badgeIcon: Icons.verified_user,
-      imageUrl: OnboardingConstants.heroImageUrl,
     );
   }
 }
@@ -157,7 +160,6 @@ class OnboardingPageThree extends StatelessWidget {
       badgeLabel: context.localization.onboardingBadgeVerifiedLabel,
       badgeValue: context.localization.onboardingBadgeVerifiedValues,
       badgeIcon: Icons.map,
-      imageUrl: OnboardingConstants.heroImageUrl,
     );
   }
 }
@@ -168,7 +170,6 @@ class OnboardingPageContent extends StatelessWidget {
   final String badgeLabel;
   final String badgeValue;
   final IconData badgeIcon;
-  final String imageUrl;
 
   const OnboardingPageContent({
     required this.title,
@@ -176,7 +177,6 @@ class OnboardingPageContent extends StatelessWidget {
     required this.badgeLabel,
     required this.badgeValue,
     required this.badgeIcon,
-    required this.imageUrl,
     super.key,
   });
 
@@ -190,7 +190,6 @@ class OnboardingPageContent extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           OnboardingHeroSection(
-            imageUrl: imageUrl,
             badgeLabel: badgeLabel,
             badgeValue: badgeValue,
             badgeIcon: badgeIcon,
@@ -204,13 +203,11 @@ class OnboardingPageContent extends StatelessWidget {
 }
 
 class OnboardingHeroSection extends StatelessWidget {
-  final String imageUrl;
   final String badgeLabel;
   final String badgeValue;
   final IconData badgeIcon;
 
   const OnboardingHeroSection({
-    required this.imageUrl,
     required this.badgeLabel,
     required this.badgeValue,
     required this.badgeIcon,
@@ -229,7 +226,7 @@ class OnboardingHeroSection extends StatelessWidget {
           clipBehavior: Clip.none,
           children: [
             const OnboardingHeroGlowBackground(),
-            OnboardingHeroImage(imageUrl: imageUrl, color: Colors.white),
+            OnboardingHeroImage(color: context.currentTheme.backgroundPrimary),
             OnboardingHeroBadgePositioned(
               label: badgeLabel,
               value: badgeValue,
@@ -328,14 +325,9 @@ class OnboardingHeroGlowCircle extends StatelessWidget {
 }
 
 class OnboardingHeroImage extends StatelessWidget {
-  final String imageUrl;
   final Color color;
 
-  const OnboardingHeroImage({
-    required this.imageUrl,
-    super.key,
-    required this.color,
-  });
+  const OnboardingHeroImage({super.key, required this.color});
 
   @override
   Widget build(BuildContext context) {
@@ -348,22 +340,20 @@ class OnboardingHeroImage extends StatelessWidget {
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withAlpha(20),
+              color: context.currentTheme.textNeutralPrimary.withAlpha(20),
               blurRadius: OnboardingConstants.heroShadowBlur,
               offset: const Offset(0, OnboardingConstants.heroShadowOffsetY),
             ),
           ],
         ),
-        child: OnboardingHeroImageCard(imageUrl: imageUrl),
+        child: const OnboardingHeroImageCard(),
       ),
     );
   }
 }
 
 class OnboardingHeroImageCard extends StatelessWidget {
-  final String imageUrl;
-
-  const OnboardingHeroImageCard({required this.imageUrl, super.key});
+  const OnboardingHeroImageCard({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -373,35 +363,31 @@ class OnboardingHeroImageCard extends StatelessWidget {
           OnboardingConstants.heroImageRadius,
         ),
       ),
-      child: OnboardingHeroImageClip(imageUrl: imageUrl),
+      child: const OnboardingHeroImageClip(),
     );
   }
 }
 
 class OnboardingHeroImageClip extends StatelessWidget {
-  final String imageUrl;
-
-  const OnboardingHeroImageClip({required this.imageUrl, super.key});
+  const OnboardingHeroImageClip({super.key});
 
   @override
   Widget build(BuildContext context) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(OnboardingConstants.heroImageRadius),
-      child: OnboardingHeroImageStack(imageUrl: imageUrl),
+      child: const OnboardingHeroImageStack(),
     );
   }
 }
 
 class OnboardingHeroImageStack extends StatelessWidget {
-  final String imageUrl;
-
-  const OnboardingHeroImageStack({required this.imageUrl, super.key});
+  const OnboardingHeroImageStack({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        OnboardingHeroImageBackground(imageUrl: imageUrl),
+        const OnboardingHeroImageBackground(),
         const OnboardingHeroImageOverlay(),
       ],
     );
@@ -409,19 +395,14 @@ class OnboardingHeroImageStack extends StatelessWidget {
 }
 
 class OnboardingHeroImageBackground extends StatelessWidget {
-  final String imageUrl;
-
-  const OnboardingHeroImageBackground({required this.imageUrl, super.key});
+  const OnboardingHeroImageBackground({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Positioned.fill(
       child: DecoratedBox(
         decoration: BoxDecoration(
-          image: DecorationImage(
-            image: NetworkImage(imageUrl),
-            fit: BoxFit.cover,
-          ),
+          color: context.currentTheme.primary.withAlpha(31),
         ),
       ),
     );
@@ -441,7 +422,7 @@ class OnboardingHeroImageOverlay extends StatelessWidget {
             end: Alignment.topCenter,
             colors: [
               context.currentTheme.backgroundPrimary.withAlpha(51),
-              Colors.transparent,
+              context.currentTheme.backgroundPrimary.withAlpha(0),
             ],
           ),
         ),
@@ -497,7 +478,7 @@ class OnboardingHeroBadge extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withAlpha(20),
+            color: context.currentTheme.textNeutralPrimary.withAlpha(20),
             blurRadius: 16.0,
             offset: const Offset(0, 8),
           ),
@@ -682,9 +663,9 @@ class OnboardingSubtitleText extends StatelessWidget {
 }
 
 class OnboardingFooter extends StatelessWidget {
-  final VoidCallback onContinue;
+  final VoidCallback? onContinue;
 
-  const OnboardingFooter({required this.onContinue, super.key});
+  const OnboardingFooter({this.onContinue, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -699,12 +680,61 @@ class OnboardingFooter extends StatelessWidget {
         children: [
           const OnboardingIndicatorRow(),
           const SizedBox(height: OnboardingConstants.footerContentSpacing),
-          PrimaryButton(
-            onPressed: onContinue,
-            icon: Icons.arrow_forward,
-            buttonText: context.localization.onboardingContinue,
-          ),
+          OnboardingContinueButton(onPressed: onContinue),
         ],
+      ),
+    );
+  }
+}
+
+class OnboardingContinueButton extends StatelessWidget {
+  final VoidCallback? onPressed;
+
+  const OnboardingContinueButton({this.onPressed, super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final bool isCompleting = context.select<OnboardingBloc, bool>(
+      (bloc) => bloc.state.status == OnboardingStatus.completing,
+    );
+    if (isCompleting) {
+      return const OnboardingLoadingButton();
+    }
+    return PrimaryButton(
+      onPressed:
+          onPressed ??
+          () => context.read<OnboardingBloc>().add(
+            const OnboardingContinuePressedEvent(),
+          ),
+      icon: Icons.arrow_forward,
+      buttonText: context.localization.onboardingContinue,
+    );
+  }
+}
+
+class OnboardingLoadingButton extends StatelessWidget {
+  const OnboardingLoadingButton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: OnboardingConstants.buttonHeight,
+      width: double.infinity,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: context.currentTheme.primary,
+          borderRadius: BorderRadius.circular(OnboardingConstants.buttonRadius),
+        ),
+        child: Center(
+          child: SizedBox(
+            height: OnboardingConstants.buttonIconSize,
+            width: OnboardingConstants.buttonIconSize,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: context.currentTheme.backgroundPrimary,
+            ),
+          ),
+        ),
       ),
     );
   }

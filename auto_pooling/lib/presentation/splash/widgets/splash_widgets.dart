@@ -13,12 +13,7 @@ class SplashBackground extends StatelessWidget {
     return SizedBox.expand(
       child: ColoredBox(
         color: context.currentTheme.backgroundPrimary,
-        child: const Stack(
-          children: [
-            SplashTopGlow(),
-            SplashBottomGlow(),
-          ],
-        ),
+        child: const Stack(children: [SplashTopGlow(), SplashBottomGlow()]),
       ),
     );
   }
@@ -68,11 +63,7 @@ class SplashGlowCircle extends StatelessWidget {
   final double size;
   final Color color;
 
-  const SplashGlowCircle({
-    required this.size,
-    required this.color,
-    super.key,
-  });
+  const SplashGlowCircle({required this.size, required this.color, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -131,10 +122,7 @@ class SplashLogoSection extends StatelessWidget {
       height: SplashConstants.logoSize + (SplashConstants.glowRingInset * 2),
       child: const Stack(
         alignment: Alignment.center,
-        children: [
-          SplashLogoGlowRing(),
-          SplashLogoIconBox(),
-        ],
+        children: [SplashLogoGlowRing(), SplashLogoIconBox()],
       ),
     );
   }
@@ -212,7 +200,7 @@ class SplashLogoSurface extends StatelessWidget {
           ),
         ],
         border: Border.all(
-          color: Colors.white.withAlpha(26),
+          color: context.currentTheme.backgroundPrimary.withAlpha(26),
         ),
       ),
     );
@@ -227,7 +215,7 @@ class SplashLogoIcon extends StatelessWidget {
     return Icon(
       Icons.commute,
       size: SplashConstants.iconSize,
-      color: Colors.white,
+      color: context.currentTheme.backgroundPrimary,
     );
   }
 }
@@ -297,10 +285,7 @@ class SplashTaglineText extends StatelessWidget {
     return const Wrap(
       alignment: WrapAlignment.center,
       spacing: SplashConstants.taglineWordSpacing,
-      children: [
-        SplashTaglinePrefixText(),
-        SplashTaglineEmphasisText(),
-      ],
+      children: [SplashTaglinePrefixText(), SplashTaglineEmphasisText()],
     );
   }
 }
@@ -365,10 +350,7 @@ class SplashFooter extends StatelessWidget {
       padding: const EdgeInsets.only(
         bottom: SplashConstants.footerBottomPadding,
       ),
-      child: Opacity(
-        opacity: 0.8,
-        child: const SplashFooterRow(),
-      ),
+      child: Opacity(opacity: 0.8, child: const SplashFooterRow()),
     );
   }
 }

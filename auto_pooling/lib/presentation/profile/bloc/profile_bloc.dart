@@ -12,8 +12,8 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   final ProfileUseCase _profileUseCase;
 
   ProfileBloc({required ProfileUseCase profileUseCase})
-      : _profileUseCase = profileUseCase,
-        super(ProfileState.initial()) {
+    : _profileUseCase = profileUseCase,
+      super(ProfileState.initial()) {
     _setupEventListener();
   }
 
@@ -34,10 +34,12 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     final String savedName = await Prefs.getString(PrefKeys.profileName) ?? '';
     final String savedEmail =
         await Prefs.getString(PrefKeys.profileEmail) ?? '';
-    final String? savedGenderValue =
-        await Prefs.getString(PrefKeys.profileGender);
+    final String? savedGenderValue = await Prefs.getString(
+      PrefKeys.profileGender,
+    );
     final ProfileGender? savedGender = _genderFromString(savedGenderValue);
-    final bool isEditing = event.isEditing ||
+    final bool isEditing =
+        event.isEditing ||
         savedName.trim().isNotEmpty ||
         savedEmail.trim().isNotEmpty ||
         savedGender != null;
@@ -121,38 +123,28 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       gender: apiGender,
     );
 
-    final Object? failure = result.error;
-    if (failure != null) {
-      emit(
-        state.copyWith(
-          status: ProfileStatus.ready,
-          errorMessage: _mapFailureMessage(failure),
-        ),
-      );
-      return;
-    }
-
-    final ProfileEntity? profile = result.data;
-    if (profile == null) {
-      emit(
-        state.copyWith(
-          status: ProfileStatus.ready,
-          errorMessage: 'Unknown error',
-        ),
-      );
-      return;
-    }
-    await _persistProfile(profile);
-
-    emit(
-      state.copyWith(
-        status: ProfileStatus.saved,
-        isEditing: true,
-        fullName: profile.name,
-        email: profile.email ?? '',
-        gender: _genderFromString(profile.gender),
-        errorMessage: '',
-      ),
+    await result.fold(
+      (failure) async {
+        emit(
+          state.copyWith(
+            status: ProfileStatus.ready,
+            errorMessage: _mapFailureMessage(failure),
+          ),
+        );
+      },
+      (profile) async {
+        await _persistProfile(profile);
+        emit(
+          state.copyWith(
+            status: ProfileStatus.saved,
+            isEditing: true,
+            fullName: profile.name,
+            email: profile.email ?? '',
+            gender: _genderFromString(profile.gender),
+            errorMessage: '',
+          ),
+        );
+      },
     );
   }
 
@@ -197,8 +189,9 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     if (trimmed.isEmpty) {
       return true;
     }
-    final RegExp regex =
-        RegExp(r'^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$');
+    final RegExp regex = RegExp(
+      r'^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$',
+    );
     return regex.hasMatch(trimmed);
   }
 
@@ -206,8 +199,10 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     final String trimmedName = profile.name.trim();
     if (trimmedName.isEmpty) {
       await Prefs.remove(PrefKeys.profileName);
+      await Prefs.setBool(PrefKeys.profileCompleted, false);
     } else {
       await Prefs.setString(PrefKeys.profileName, trimmedName);
+      await Prefs.setBool(PrefKeys.profileCompleted, true);
     }
 
     final String trimmedEmail = profile.email?.trim() ?? '';

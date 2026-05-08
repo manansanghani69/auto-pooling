@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../routes.dart';
+import '../../utils/route_resolver.dart';
 import '../../widgets/app_snack_bar_message.dart';
 import 'bloc/auth_bloc.dart';
 import 'bloc/auth_state.dart';
@@ -26,13 +27,11 @@ class AuthOtpScreen extends StatelessWidget {
             previous.errorMessage != current.errorMessage,
         listener: (context, state) {
           if (state.status == AuthStatus.otpVerified) {
-            final bool needsProfile = state.isNewUser ||
-                state.user?.name.trim().isEmpty == true;
-            if (needsProfile) {
-              context.router.replaceAll([ProfileRoute()]);
-            } else {
-              context.router.replaceAll([const HomeRoute()]);
-            }
+            RouteResolver.resolveNextRoute().then((route) {
+              if (context.mounted) {
+                context.router.replaceAll([route]);
+              }
+            });
             return;
           }
           if (state.status == AuthStatus.failure &&
@@ -55,24 +54,28 @@ class AuthOtpBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AuthConstants.horizontalPadding,
-        ),
-        child: const Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(height: AuthConstants.headerTopPadding),
-            AuthOtpHeader(),
-            SizedBox(height: AuthConstants.sectionSpacing),
-            AuthOtpHeadlineSection(),
-            SizedBox(height: AuthConstants.sectionSpacing),
-            AuthOtpInputSection(),
-            SizedBox(height: AuthConstants.sectionSpacing),
-            AuthOtpTimerSection(),
-            SizedBox(height: AuthConstants.bottomSpacing),
-          ],
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onTap: FocusManager.instance.primaryFocus?.unfocus,
+      child: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AuthConstants.horizontalPadding,
+          ),
+          child: const Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(height: AuthConstants.headerTopPadding),
+              AuthOtpHeader(),
+              SizedBox(height: AuthConstants.sectionSpacing),
+              AuthOtpHeadlineSection(),
+              SizedBox(height: AuthConstants.sectionSpacing),
+              AuthOtpInputSection(),
+              SizedBox(height: AuthConstants.sectionSpacing),
+              AuthOtpTimerSection(),
+              SizedBox(height: AuthConstants.bottomSpacing),
+            ],
+          ),
         ),
       ),
     );
