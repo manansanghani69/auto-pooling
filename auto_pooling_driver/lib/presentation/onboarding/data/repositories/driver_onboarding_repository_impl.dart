@@ -33,7 +33,7 @@ class DriverOnboardingRepositoryImpl implements DriverOnboardingRepository {
     final String? accessToken = _authSessionService.currentSession?.accessToken;
     if (accessToken == null || accessToken.isEmpty) {
       return const Left<Failure, DriverOnboardingProfile>(
-        UnauthorizedFailure(message: 'Please sign in again to continue.'),
+        UnauthorizedFailure(),
       );
     }
 
@@ -68,7 +68,7 @@ class DriverOnboardingRepositoryImpl implements DriverOnboardingRepository {
     final String? accessToken = _authSessionService.currentSession?.accessToken;
     if (accessToken == null || accessToken.isEmpty) {
       return const Left<Failure, DriverOnboardingProfile>(
-        UnauthorizedFailure(message: 'Please sign in again to continue.'),
+        UnauthorizedFailure(),
       );
     }
 

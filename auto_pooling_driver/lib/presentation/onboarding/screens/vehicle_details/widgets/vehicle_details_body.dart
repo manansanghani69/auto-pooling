@@ -1,3 +1,4 @@
+import 'package:auto_pooling_driver/common/theme/app_text_styles.dart';
 import 'package:auto_pooling_driver/constants/app_constants.dart';
 import 'package:auto_pooling_driver/core/extensions/build_context_x.dart';
 import 'package:auto_pooling_driver/core/extensions/failure_x.dart';
@@ -25,8 +26,20 @@ class VehicleDetailsBody extends StatelessWidget {
     return BlocListener<OnboardingBloc, OnboardingState>(
       listenWhen: (OnboardingState previous, OnboardingState current) =>
           previous.profileSubmissionStatus != current.profileSubmissionStatus ||
-          previous.failure != current.failure,
+          previous.failure != current.failure ||
+          previous.feedbackMessage != current.feedbackMessage,
       listener: (BuildContext context, OnboardingState state) {
+        final String? feedbackMessage = state.feedbackMessage;
+        if (feedbackMessage != null) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(feedbackMessage)));
+          context.read<OnboardingBloc>().add(
+            const OnboardingFeedbackConsumedEvent(),
+          );
+          return;
+        }
+
         if (state.profileSubmissionStatus ==
             OnboardingSubmissionStatus.success) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -60,14 +73,18 @@ class VehicleDetailsBody extends StatelessWidget {
         ),
         body: SafeArea(
           top: false,
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(
-              AppConstants.screenHorizontalPadding,
-              8,
-              AppConstants.screenHorizontalPadding,
-              120,
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(
+                AppConstants.screenHorizontalPadding,
+                8,
+                AppConstants.screenHorizontalPadding,
+                120,
+              ),
+              child: const _VehicleDetailsContent(),
             ),
-            child: const _VehicleDetailsContent(),
           ),
         ),
         bottomNavigationBar: BlocBuilder<OnboardingBloc, OnboardingState>(
@@ -76,13 +93,12 @@ class VehicleDetailsBody extends StatelessWidget {
               padding: const EdgeInsets.all(OnboardingConstants.footerSpacing),
               child: OnboardingFooterAction(
                 label: context.localization.onboardingSaveContinueAction,
-                onPressed: state.canSubmitVehicleDetails
-                    ? () {
-                        context.read<OnboardingBloc>().add(
-                          const OnboardingProfileSubmittedEvent(),
-                        );
-                      }
-                    : null,
+                isLoading: state.isSubmittingProfile,
+                onPressed: () {
+                  context.read<OnboardingBloc>().add(
+                    const OnboardingProfileSubmittedEvent(),
+                  );
+                },
               ),
             );
           },
@@ -115,7 +131,9 @@ class _VehicleDetailsContent extends StatelessWidget {
             const SizedBox(height: OnboardingConstants.sectionSpacing),
             Text(
               context.localization.onboardingVehicleTypeLabel,
-              style: Theme.of(context).textTheme.labelLarge,
+              style: AppTextStyles.p3Medium.copyWith(
+                color: context.currentTheme.textNeutralSecondary,
+              ),
             ),
             const SizedBox(height: 12),
             VehicleDetailsTypeGrid(
@@ -126,11 +144,23 @@ class _VehicleDetailsContent extends StatelessWidget {
                 );
               },
             ),
+            if (state.showVehicleValidationErrors &&
+                state.vehicleType.trim().isEmpty) ...<Widget>[
+              const SizedBox(height: 8),
+              VehicleDetailsValidationError(
+                message: context.localization.commonValidationFailure,
+              ),
+            ],
             const SizedBox(height: OnboardingConstants.sectionSpacing),
             OnboardingTextField(
               label: context.localization.onboardingRegistrationNumberLabel,
               initialValue: state.vehicleRegistrationNumber,
               hintText: context.localization.onboardingRegistrationNumberHint,
+              errorText:
+                  state.showVehicleValidationErrors &&
+                      state.vehicleRegistrationNumber.trim().isEmpty
+                  ? context.localization.commonValidationFailure
+                  : null,
               onChanged: (String value) {
                 context.read<OnboardingBloc>().add(
                   OnboardingVehicleRegistrationChangedEvent(
@@ -142,7 +172,9 @@ class _VehicleDetailsContent extends StatelessWidget {
             const SizedBox(height: 16),
             Text(
               context.localization.onboardingAvailableSeatsLabel,
-              style: Theme.of(context).textTheme.labelLarge,
+              style: AppTextStyles.p3Medium.copyWith(
+                color: context.currentTheme.textNeutralSecondary,
+              ),
             ),
             const SizedBox(height: 8),
             OnboardingPassengerCapacityCard(
@@ -160,7 +192,15 @@ class _VehicleDetailsContent extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             VehicleDetailsPhotoPlaceholder(
-              onTap: () => _showUploadPlaceholder(context),
+              onTap: () {
+                context.read<OnboardingBloc>().add(
+                  OnboardingFeedbackRequestedEvent(
+                    message: context
+                        .localization
+                        .onboardingVehiclePhotoPlaceholderMessage,
+                  ),
+                );
+              },
             ),
             const SizedBox(height: 16),
             OnboardingInfoBanner(
@@ -172,13 +212,19 @@ class _VehicleDetailsContent extends StatelessWidget {
       },
     );
   }
+}
 
-  void _showUploadPlaceholder(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          context.localization.onboardingVehiclePhotoPlaceholderMessage,
-        ),
+class VehicleDetailsValidationError extends StatelessWidget {
+  const VehicleDetailsValidationError({required this.message, super.key});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      message,
+      style: AppTextStyles.p3Medium.copyWith(
+        color: context.currentTheme.accentSecondary,
       ),
     );
   }

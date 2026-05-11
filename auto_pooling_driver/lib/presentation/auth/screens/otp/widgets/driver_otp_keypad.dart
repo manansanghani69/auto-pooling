@@ -1,3 +1,4 @@
+import 'package:auto_pooling_driver/common/theme/app_text_styles.dart';
 import 'package:auto_pooling_driver/core/extensions/build_context_x.dart';
 import 'package:auto_pooling_driver/presentation/auth/bloc/auth_bloc.dart';
 import 'package:auto_pooling_driver/presentation/auth/bloc/auth_event.dart';
@@ -89,7 +90,12 @@ class DriverOtpDigitKeypadButton extends StatelessWidget {
               AuthOtpDigitAppendedEvent(digit: digit),
             );
           },
-          child: Text(digit, style: Theme.of(context).textTheme.headlineMedium),
+          child: Text(
+            digit,
+            style: AppTextStyles.h2Bold.copyWith(
+              color: context.currentTheme.textNeutralPrimary,
+            ),
+          ),
         ),
       ),
     );

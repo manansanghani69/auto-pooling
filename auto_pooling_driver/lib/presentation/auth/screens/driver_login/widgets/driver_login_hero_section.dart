@@ -67,7 +67,7 @@ class DriverLoginHeroCircle extends StatelessWidget {
         height: size,
         margin: const EdgeInsets.all(18),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.10),
+          color: context.currentTheme.backgroundSurface.withValues(alpha: 0.10),
           shape: BoxShape.circle,
         ),
       ),
@@ -80,8 +80,12 @@ class DriverLoginHeroRouteGlyph extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
-      child: Icon(Icons.alt_route_rounded, size: 136, color: Color(0x33FFFFFF)),
+    return Center(
+      child: Icon(
+        Icons.alt_route_rounded,
+        size: 136,
+        color: context.currentTheme.backgroundSurface.withValues(alpha: 0.20),
+      ),
     );
   }
 }
@@ -97,7 +101,7 @@ class DriverLoginHeroOverlay extends StatelessWidget {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: <Color>[
-            Colors.transparent,
+            context.currentTheme.backgroundPrimary.withValues(alpha: 0),
             context.currentTheme.backgroundPrimary,
           ],
           stops: const <double>[0.45, 1],
@@ -120,7 +124,9 @@ class DriverLoginBranding extends StatelessWidget {
           const SizedBox(width: 12),
           Text(
             context.localization.appTitle,
-            style: AppTextStyles.h2Bold.copyWith(color: Colors.white),
+            style: AppTextStyles.h2Bold.copyWith(
+              color: context.currentTheme.backgroundSurface,
+            ),
           ),
         ],
       ),
@@ -137,11 +143,16 @@ class DriverLoginBrandMark extends StatelessWidget {
       width: 44,
       height: 44,
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.18),
+        color: context.currentTheme.backgroundSurface.withValues(alpha: 0.18),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.22)),
+        border: Border.all(
+          color: context.currentTheme.backgroundSurface.withValues(alpha: 0.22),
+        ),
       ),
-      child: const Icon(Icons.local_taxi_rounded, color: Colors.white),
+      child: Icon(
+        Icons.local_taxi_rounded,
+        color: context.currentTheme.backgroundSurface,
+      ),
     );
   }
 }

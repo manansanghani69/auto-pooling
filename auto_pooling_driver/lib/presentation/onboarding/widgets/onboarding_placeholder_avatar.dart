@@ -50,9 +50,9 @@ class OnboardingPlaceholderAvatar extends StatelessWidget {
                 child: CircleAvatar(
                   radius: 18,
                   backgroundColor: context.currentTheme.accentPrimary,
-                  child: const Icon(
+                  child: Icon(
                     Icons.photo_camera_outlined,
-                    color: Colors.white,
+                    color: context.currentTheme.backgroundSurface,
                     size: 18,
                   ),
                 ),

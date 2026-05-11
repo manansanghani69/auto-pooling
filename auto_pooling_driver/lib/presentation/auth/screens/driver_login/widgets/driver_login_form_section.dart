@@ -1,5 +1,6 @@
 import 'package:auto_pooling_driver/common/theme/app_text_styles.dart';
 import 'package:auto_pooling_driver/core/extensions/build_context_x.dart';
+import 'package:auto_pooling_driver/core/extensions/failure_x.dart';
 import 'package:auto_pooling_driver/presentation/auth/bloc/auth_bloc.dart';
 import 'package:auto_pooling_driver/presentation/auth/bloc/auth_event.dart';
 import 'package:auto_pooling_driver/presentation/auth/bloc/auth_state.dart';
@@ -24,7 +25,9 @@ class DriverLoginFormSection extends StatelessWidget {
           borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
           boxShadow: <BoxShadow>[
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.06),
+              color: context.currentTheme.textNeutralPrimary.withValues(
+                alpha: 0.06,
+              ),
               blurRadius: 20,
               offset: const Offset(0, -4),
             ),
@@ -353,9 +356,10 @@ class DriverLoginErrorMessage extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Text(
-        state.requestOtpFailure!.message ??
-            context.localization.commonUnexpectedFailure,
-        style: AppTextStyles.p2Regular.copyWith(color: const Color(0xFFB42318)),
+        state.requestOtpFailure!.resolveMessage(context.localization),
+        style: AppTextStyles.p2Regular.copyWith(
+          color: context.currentTheme.accentSecondary,
+        ),
       ),
     );
   }
@@ -443,14 +447,14 @@ class _DriverLoginStatusContent {
   ) {
     switch (status) {
       case DriverOnboardingStatus.documentsUploaded:
-        return const _DriverLoginStatusContent(
+        return _DriverLoginStatusContent(
           title: '',
           description: '',
           iconData: Icons.hourglass_top_rounded,
-          backgroundColor: Color(0xFFFFF7E6),
-          borderColor: Color(0xFFF7D99D),
-          titleColor: Color(0xFF8A5A00),
-          descriptionColor: Color(0xFF8A5A00),
+          backgroundColor: context.currentTheme.highlightSurface,
+          borderColor: context.currentTheme.accentSecondary,
+          titleColor: context.currentTheme.textNeutralPrimary,
+          descriptionColor: context.currentTheme.textNeutralSecondary,
         )._localized(
           context.localization.authStatusPendingTitle,
           context.localization.authStatusPendingDescription,
@@ -468,14 +472,14 @@ class _DriverLoginStatusContent {
           descriptionColor: context.currentTheme.textNeutralSecondary,
         );
       case DriverOnboardingStatus.rejected:
-        return const _DriverLoginStatusContent(
+        return _DriverLoginStatusContent(
           title: '',
           description: '',
           iconData: Icons.cancel_outlined,
-          backgroundColor: Color(0xFFFEF3F2),
-          borderColor: Color(0xFFFBC8C4),
-          titleColor: Color(0xFFB42318),
-          descriptionColor: Color(0xFFB42318),
+          backgroundColor: context.currentTheme.highlightSurface,
+          borderColor: context.currentTheme.accentSecondary,
+          titleColor: context.currentTheme.textNeutralPrimary,
+          descriptionColor: context.currentTheme.textNeutralSecondary,
         )._localized(
           context.localization.authStatusRejectedTitle,
           context.localization.authStatusRejectedDescription,

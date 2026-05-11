@@ -1,9 +1,11 @@
 import 'package:auto_pooling_driver/common/theme/app_text_styles.dart';
 import 'package:auto_pooling_driver/core/extensions/build_context_x.dart';
+import 'package:auto_pooling_driver/core/extensions/failure_x.dart';
 import 'package:auto_pooling_driver/presentation/auth/bloc/auth_bloc.dart';
 import 'package:auto_pooling_driver/presentation/auth/bloc/auth_event.dart';
 import 'package:auto_pooling_driver/presentation/auth/bloc/auth_state.dart';
 import 'package:auto_pooling_driver/presentation/auth/constants/auth_constants.dart';
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -52,7 +54,7 @@ class DriverOtpNavigationHeader extends StatelessWidget {
             context.read<AuthBloc>().add(
               const AuthOtpEditPhoneRequestedEvent(),
             );
-            Navigator.of(context).pop();
+            context.router.maybePop();
           },
           icon: const Icon(Icons.arrow_back_rounded),
         ),
@@ -103,7 +105,7 @@ class DriverOtpHeader extends StatelessWidget {
                 context.read<AuthBloc>().add(
                   const AuthOtpEditPhoneRequestedEvent(),
                 );
-                Navigator.of(context).pop();
+                context.router.maybePop();
               },
               icon: const Icon(Icons.edit_outlined, size: 16),
               label: Text(context.localization.authEditAction),
@@ -125,7 +127,8 @@ class DriverOtpStatusBanner extends StatelessWidget {
     );
 
     final String? message =
-        state.verifyOtpFailure?.message ?? state.requestOtpFailure?.message;
+        state.verifyOtpFailure?.resolveMessage(context.localization) ??
+        state.requestOtpFailure?.resolveMessage(context.localization);
 
     if (message == null || message.trim().isEmpty) {
       return const SizedBox.shrink();
@@ -137,14 +140,14 @@ class DriverOtpStatusBanner extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: const Color(0xFFFEF3F2),
+          color: context.currentTheme.highlightSurface,
           borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: const Color(0xFFFBC8C4)),
+          border: Border.all(color: context.currentTheme.accentSecondary),
         ),
         child: Text(
           message,
           style: AppTextStyles.p2Regular.copyWith(
-            color: const Color(0xFFB42318),
+            color: context.currentTheme.textNeutralPrimary,
           ),
         ),
       ),
@@ -273,20 +276,38 @@ class DriverOtpVerifyButton extends StatelessWidget {
               }
             : null,
         child: state.isVerifyingOtp
-            ? const SizedBox(
-                width: 22,
-                height: 22,
-                child: CircularProgressIndicator(strokeWidth: 2.2),
-              )
-            : Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  Text(context.localization.authVerifyAction),
-                  const SizedBox(width: 8),
-                  const Icon(Icons.check_circle_outline_rounded),
-                ],
-              ),
+            ? const DriverOtpVerifyLoadingIndicator()
+            : const DriverOtpVerifyButtonContent(),
       ),
+    );
+  }
+}
+
+class DriverOtpVerifyLoadingIndicator extends StatelessWidget {
+  const DriverOtpVerifyLoadingIndicator({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const SizedBox(
+      width: 22,
+      height: 22,
+      child: CircularProgressIndicator(strokeWidth: 2.2),
+    );
+  }
+}
+
+class DriverOtpVerifyButtonContent extends StatelessWidget {
+  const DriverOtpVerifyButtonContent({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: <Widget>[
+        Text(context.localization.authVerifyAction),
+        const SizedBox(width: 8),
+        const Icon(Icons.check_circle_outline_rounded),
+      ],
     );
   }
 }

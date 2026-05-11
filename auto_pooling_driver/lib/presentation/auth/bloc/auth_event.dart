@@ -48,3 +48,7 @@ class AuthResendCountdownTickedEvent extends AuthEvent {
 class AuthOtpEditPhoneRequestedEvent extends AuthEvent {
   const AuthOtpEditPhoneRequestedEvent();
 }
+
+class AuthHelpRequestedEvent extends AuthEvent {
+  const AuthHelpRequestedEvent();
+}

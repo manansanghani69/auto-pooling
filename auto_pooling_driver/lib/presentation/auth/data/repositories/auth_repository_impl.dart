@@ -53,20 +53,12 @@ class AuthRepositoryImpl implements AuthRepository {
           .verifyOtp(phoneNumber: phoneNumber, otpCode: otpCode);
 
       if (verification.role != AuthConstants.driverRole) {
-        return Left<Failure, DriverSession>(
-          const UnauthorizedFailure(
-            message: 'This phone number is not registered as a driver.',
-          ),
-        );
+        return Left<Failure, DriverSession>(const UnauthorizedFailure());
       }
 
       if (verification.accessToken.isEmpty ||
           verification.refreshToken.isEmpty) {
-        return Left<Failure, DriverSession>(
-          const ServerFailure(
-            message: 'Login is temporarily unavailable. Please try again.',
-          ),
-        );
+        return Left<Failure, DriverSession>(const ServerFailure());
       }
 
       final driverProfile = await _remoteDataSource.getDriverProfile(
@@ -84,6 +76,9 @@ class AuthRepositoryImpl implements AuthRepository {
           refreshToken: verification.refreshToken,
           onboardingStatus: driverProfile.onboardingStatus,
           isNewUser: verification.isNewUser,
+          hasCompletedProfileDetails: _hasCompletedProfileDetails(
+            driverProfile.onboardingStatus,
+          ),
         ),
       );
     } on ApiException catch (error) {
@@ -118,5 +113,11 @@ class AuthRepositoryImpl implements AuthRepository {
     }
 
     return UnexpectedFailure(message: error.message);
+  }
+
+  bool _hasCompletedProfileDetails(DriverOnboardingStatus status) {
+    return status == DriverOnboardingStatus.documentsUploaded ||
+        status == DriverOnboardingStatus.approved ||
+        status == DriverOnboardingStatus.rejected;
   }
 }

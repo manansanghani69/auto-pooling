@@ -2,7 +2,6 @@ import 'package:auto_pooling_driver/core/extensions/build_context_x.dart';
 import 'package:auto_pooling_driver/presentation/auth/bloc/auth_bloc.dart';
 import 'package:auto_pooling_driver/presentation/auth/bloc/auth_event.dart';
 import 'package:auto_pooling_driver/presentation/auth/bloc/auth_state.dart';
-import 'package:auto_pooling_driver/presentation/auth/domain/entities/driver_session.dart';
 import 'package:auto_pooling_driver/presentation/auth/screens/otp/widgets/driver_otp_content.dart';
 import 'package:auto_pooling_driver/presentation/auth/screens/otp/widgets/driver_otp_keypad.dart';
 import 'package:auto_pooling_driver/routes.dart';
@@ -21,26 +20,9 @@ class DriverOtpBody extends StatelessWidget {
           previous.verifyOtpStatus != current.verifyOtpStatus &&
           current.verifyOtpStatus == AuthSubmissionStatus.success,
       listener: (BuildContext context, AuthState state) {
-        if (state.shouldRouteHome) {
-          context.router.replaceAll(<PageRouteInfo<dynamic>>[
-            const HomeRoute(),
-          ]);
-          return;
-        }
-
-        if (state.onboardingStatus ==
-            DriverOnboardingStatus.documentsUploaded) {
-          context.router.replaceAll(<PageRouteInfo<dynamic>>[
-            const DriverOnboardingStatusRoute(),
-          ]);
-          return;
-        }
-
-        if (state.shouldReturnToLogin) {
-          context.router.replaceAll(<PageRouteInfo<dynamic>>[
-            const DriverOnboardingPersonalDetailsRoute(),
-          ]);
-        }
+        context.router.replaceAll(<PageRouteInfo<dynamic>>[
+          const DriverSplashRoute(),
+        ]);
       },
       child: Focus(
         autofocus: true,

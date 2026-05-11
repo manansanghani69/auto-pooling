@@ -1,3 +1,4 @@
+import 'package:auto_pooling_driver/common/theme/app_text_styles.dart';
 import 'package:auto_pooling_driver/core/extensions/build_context_x.dart';
 import 'package:flutter/material.dart';
 
@@ -11,6 +12,7 @@ class OnboardingTextField extends StatelessWidget {
     this.maxLines = 1,
     this.readOnly = false,
     this.suffix,
+    this.errorText,
     super.key,
   });
 
@@ -21,6 +23,7 @@ class OnboardingTextField extends StatelessWidget {
   final int maxLines;
   final bool readOnly;
   final Widget? suffix;
+  final String? errorText;
   final ValueChanged<String> onChanged;
 
   @override
@@ -33,7 +36,12 @@ class OnboardingTextField extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        Text(label, style: Theme.of(context).textTheme.labelLarge),
+        Text(
+          label,
+          style: AppTextStyles.p3Medium.copyWith(
+            color: context.currentTheme.textNeutralSecondary,
+          ),
+        ),
         const SizedBox(height: 8),
         TextFormField(
           key: ValueKey<String>('$label-${initialValue ?? ''}'),
@@ -44,6 +52,7 @@ class OnboardingTextField extends StatelessWidget {
           readOnly: readOnly,
           decoration: InputDecoration(
             hintText: hintText,
+            errorText: errorText,
             suffixIcon: suffix,
             border: border,
             enabledBorder: border,
@@ -52,6 +61,9 @@ class OnboardingTextField extends StatelessWidget {
             ),
             fillColor: context.currentTheme.backgroundSurface,
             filled: true,
+            errorStyle: AppTextStyles.p3Medium.copyWith(
+              color: context.currentTheme.accentSecondary,
+            ),
           ),
         ),
       ],

@@ -21,12 +21,24 @@ class ApplicationStatusBody extends StatelessWidget {
       listenWhen: (OnboardingState previous, OnboardingState current) =>
           previous.statusRefreshStatus != current.statusRefreshStatus ||
           previous.onboardingStatus != current.onboardingStatus ||
-          previous.failure != current.failure,
+          previous.failure != current.failure ||
+          previous.feedbackMessage != current.feedbackMessage,
       listener: (BuildContext context, OnboardingState state) {
         if (state.onboardingStatus == DriverOnboardingStatus.approved) {
           context.router.replaceAll(<PageRouteInfo<dynamic>>[
-            const HomeRoute(),
+            const DriverSplashRoute(),
           ]);
+          return;
+        }
+
+        final String? feedbackMessage = state.feedbackMessage;
+        if (feedbackMessage != null) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(feedbackMessage)));
+          context.read<OnboardingBloc>().add(
+            const OnboardingFeedbackConsumedEvent(),
+          );
           return;
         }
 
@@ -62,22 +74,21 @@ class ApplicationStatusBody extends StatelessWidget {
               padding: const EdgeInsets.all(16),
               child: OnboardingFooterAction(
                 label: context.localization.onboardingRefreshStatusAction,
+                isLoading: state.isRefreshingStatus,
                 onPressed: state.isRefreshingStatus
                     ? null
                     : () {
-                        context.router.replaceAll(<PageRouteInfo<dynamic>>[
-                          const HomeRoute(),
-                        ]);
+                        context.read<OnboardingBloc>().add(
+                          const OnboardingStatusRefreshRequestedEvent(),
+                        );
                       },
                 secondary: TextButton(
                   onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          context
-                              .localization
-                              .onboardingSupportPlaceholderMessage,
-                        ),
+                    context.read<OnboardingBloc>().add(
+                      OnboardingFeedbackRequestedEvent(
+                        message: context
+                            .localization
+                            .onboardingSupportPlaceholderMessage,
                       ),
                     );
                   },

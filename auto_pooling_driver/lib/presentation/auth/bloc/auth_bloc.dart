@@ -37,6 +37,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthResendOtpRequestedEvent>(_onAuthResendOtpRequestedEvent);
     on<AuthResendCountdownTickedEvent>(_onAuthResendCountdownTickedEvent);
     on<AuthOtpEditPhoneRequestedEvent>(_onAuthOtpEditPhoneRequestedEvent);
+    on<AuthHelpRequestedEvent>(_onAuthHelpRequestedEvent);
   }
 
   Future<void> _onAuthPhoneNumberChangedEvent(
@@ -73,9 +74,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(
         state.copyWith(
           requestOtpStatus: AuthSubmissionStatus.failure,
-          requestOtpFailure: const ValidationFailure(
-            message: 'Enter a valid 10-digit mobile number.',
-          ),
+          requestOtpFailure: const ValidationFailure(),
           clearOnboardingStatus: true,
         ),
       );
@@ -177,9 +176,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(
         state.copyWith(
           verifyOtpStatus: AuthSubmissionStatus.failure,
-          verifyOtpFailure: const ValidationFailure(
-            message: 'Enter the 4-digit OTP sent to your phone.',
-          ),
+          verifyOtpFailure: const ValidationFailure(),
         ),
       );
       return;
@@ -197,8 +194,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       otpCode: state.otpCode,
     );
 
-    result.fold(
-      (Failure failure) {
+    await result.fold<Future<void>>(
+      (Failure failure) async {
         emit(
           state.copyWith(
             verifyOtpStatus: AuthSubmissionStatus.failure,
@@ -206,9 +203,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           ),
         );
       },
-      (DriverSession session) {
+      (DriverSession session) async {
         _cancelResendTimer();
-        _authSessionService.saveSession(session);
+        await _authSessionService.saveSession(session);
         emit(
           state.copyWith(
             verifyOtpStatus: AuthSubmissionStatus.success,
@@ -217,6 +214,15 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           ),
         );
       },
+    );
+  }
+
+  Future<void> _onAuthHelpRequestedEvent(
+    AuthHelpRequestedEvent event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(
+      state.copyWith(helpDialogRequestCount: state.helpDialogRequestCount + 1),
     );
   }
 

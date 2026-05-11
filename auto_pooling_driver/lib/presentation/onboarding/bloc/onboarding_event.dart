@@ -38,6 +38,18 @@ class OnboardingReferralCodeChangedEvent extends OnboardingEvent {
   final String referralCode;
 }
 
+class OnboardingDatePickerRequestedEvent extends OnboardingEvent {
+  const OnboardingDatePickerRequestedEvent();
+}
+
+class OnboardingDatePickerConsumedEvent extends OnboardingEvent {
+  const OnboardingDatePickerConsumedEvent();
+}
+
+class OnboardingPersonalDetailsContinueRequestedEvent extends OnboardingEvent {
+  const OnboardingPersonalDetailsContinueRequestedEvent();
+}
+
 class OnboardingVehicleTypeChangedEvent extends OnboardingEvent {
   const OnboardingVehicleTypeChangedEvent({required this.vehicleType});
 
@@ -64,10 +76,24 @@ class OnboardingProfileSubmittedEvent extends OnboardingEvent {
   const OnboardingProfileSubmittedEvent();
 }
 
+class OnboardingDocumentsSubmittedEvent extends OnboardingEvent {
+  const OnboardingDocumentsSubmittedEvent();
+}
+
 class OnboardingStatusRefreshRequestedEvent extends OnboardingEvent {
   const OnboardingStatusRefreshRequestedEvent();
 }
 
+class OnboardingFeedbackRequestedEvent extends OnboardingEvent {
+  const OnboardingFeedbackRequestedEvent({required this.message});
+
+  final String message;
+}
+
 class OnboardingFeedbackConsumedEvent extends OnboardingEvent {
   const OnboardingFeedbackConsumedEvent();
+}
+
+class OnboardingNavigationConsumedEvent extends OnboardingEvent {
+  const OnboardingNavigationConsumedEvent();
 }

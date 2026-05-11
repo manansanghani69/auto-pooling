@@ -1,6 +1,7 @@
 import 'package:auto_pooling_driver/presentation/auth/bloc/auth_bloc.dart';
 import 'package:auto_pooling_driver/presentation/auth/screens/driver_login/driver_login_screen.dart';
 import 'package:auto_pooling_driver/presentation/auth/screens/otp/driver_otp_screen.dart';
+import 'package:auto_pooling_driver/presentation/auth/screens/splash/driver_splash_screen.dart';
 import 'package:auto_pooling_driver/presentation/home/home_screen.dart';
 import 'package:auto_pooling_driver/presentation/onboarding/bloc/onboarding_bloc.dart';
 import 'package:auto_pooling_driver/presentation/onboarding/screens/application_status/application_status_screen.dart';
@@ -16,7 +17,8 @@ part 'routes.gr.dart';
 class AppRouter extends RootStackRouter {
   @override
   List<AutoRoute> get routes => <AutoRoute>[
-    AutoRoute(page: DriverLoginRoute.page, initial: true),
+    AutoRoute(page: DriverSplashRoute.page, initial: true),
+    AutoRoute(page: DriverLoginRoute.page),
     AutoRoute(page: DriverOtpRoute.page),
     AutoRoute(page: DriverOnboardingPersonalDetailsRoute.page),
     AutoRoute(page: DriverOnboardingVehicleDetailsRoute.page),

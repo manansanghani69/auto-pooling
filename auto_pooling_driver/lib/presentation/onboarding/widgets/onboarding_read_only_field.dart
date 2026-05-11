@@ -1,3 +1,4 @@
+import 'package:auto_pooling_driver/common/theme/app_text_styles.dart';
 import 'package:auto_pooling_driver/core/extensions/build_context_x.dart';
 import 'package:flutter/material.dart';
 
@@ -18,7 +19,12 @@ class OnboardingReadOnlyField extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        Text(label, style: Theme.of(context).textTheme.labelLarge),
+        Text(
+          label,
+          style: AppTextStyles.p3Medium.copyWith(
+            color: context.currentTheme.textNeutralSecondary,
+          ),
+        ),
         const SizedBox(height: 8),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
@@ -34,7 +40,7 @@ class OnboardingReadOnlyField extends StatelessWidget {
               Expanded(
                 child: Text(
                   value,
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  style: AppTextStyles.p1Medium.copyWith(
                     color: context.currentTheme.textNeutralSecondary,
                   ),
                 ),

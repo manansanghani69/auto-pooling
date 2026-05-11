@@ -16,6 +16,7 @@ class AuthState extends Equatable {
     this.verifyOtpFailure,
     this.resendSecondsRemaining = 0,
     this.onboardingStatus,
+    this.helpDialogRequestCount = 0,
   });
 
   final String phoneNumber;
@@ -27,6 +28,7 @@ class AuthState extends Equatable {
   final Failure? verifyOtpFailure;
   final int resendSecondsRemaining;
   final DriverOnboardingStatus? onboardingStatus;
+  final int helpDialogRequestCount;
 
   bool get isRequestingOtp => requestOtpStatus == AuthSubmissionStatus.loading;
 
@@ -40,15 +42,6 @@ class AuthState extends Equatable {
       otpCode.length == AuthConstants.otpLength && !isVerifyingOtp;
 
   bool get isResendAvailable => resendSecondsRemaining == 0 && !isRequestingOtp;
-
-  bool get shouldRouteHome =>
-      verifyOtpStatus == AuthSubmissionStatus.success &&
-      onboardingStatus == DriverOnboardingStatus.approved;
-
-  bool get shouldReturnToLogin =>
-      verifyOtpStatus == AuthSubmissionStatus.success &&
-      onboardingStatus != null &&
-      onboardingStatus != DriverOnboardingStatus.approved;
 
   String get normalizedPhoneNumber =>
       phoneNumber.replaceAll(RegExp(r'\D'), '').trim();
@@ -66,6 +59,7 @@ class AuthState extends Equatable {
     Failure? verifyOtpFailure,
     int? resendSecondsRemaining,
     DriverOnboardingStatus? onboardingStatus,
+    int? helpDialogRequestCount,
     bool clearRequestOtpFailure = false,
     bool clearVerifyOtpFailure = false,
     bool clearOnboardingStatus = false,
@@ -87,6 +81,8 @@ class AuthState extends Equatable {
       onboardingStatus: clearOnboardingStatus
           ? null
           : onboardingStatus ?? this.onboardingStatus,
+      helpDialogRequestCount:
+          helpDialogRequestCount ?? this.helpDialogRequestCount,
     );
   }
 
@@ -101,5 +97,6 @@ class AuthState extends Equatable {
     verifyOtpFailure,
     resendSecondsRemaining,
     onboardingStatus,
+    helpDialogRequestCount,
   ];
 }

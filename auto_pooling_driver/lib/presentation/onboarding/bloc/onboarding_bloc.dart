@@ -27,20 +27,25 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
                DriverOnboardingStatus.infoRemaining,
          ),
        ) {
-    _setupEventHandlers();
+    _setupEventListener();
   }
 
   final GetDriverOnboardingProfile _getDriverOnboardingProfile;
   final CreateDriverProfile _createDriverProfile;
   final AuthSessionService _authSessionService;
 
-  void _setupEventHandlers() {
+  void _setupEventListener() {
     on<OnboardingInitializedEvent>(_onInitialized);
     on<OnboardingFullNameChangedEvent>(_onFullNameChanged);
     on<OnboardingDateOfBirthChangedEvent>(_onDateOfBirthChanged);
     on<OnboardingGenderChangedEvent>(_onGenderChanged);
     on<OnboardingAddressChangedEvent>(_onAddressChanged);
     on<OnboardingReferralCodeChangedEvent>(_onReferralChanged);
+    on<OnboardingDatePickerRequestedEvent>(_onDatePickerRequested);
+    on<OnboardingDatePickerConsumedEvent>(_onDatePickerConsumed);
+    on<OnboardingPersonalDetailsContinueRequestedEvent>(
+      _onPersonalDetailsContinueRequested,
+    );
     on<OnboardingVehicleTypeChangedEvent>(_onVehicleTypeChanged);
     on<OnboardingVehicleRegistrationChangedEvent>(
       _onVehicleRegistrationChanged,
@@ -52,8 +57,11 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
       _onPassengerCapacityDecremented,
     );
     on<OnboardingProfileSubmittedEvent>(_onProfileSubmitted);
+    on<OnboardingDocumentsSubmittedEvent>(_onDocumentsSubmitted);
     on<OnboardingStatusRefreshRequestedEvent>(_onStatusRefreshRequested);
+    on<OnboardingFeedbackRequestedEvent>(_onFeedbackRequested);
     on<OnboardingFeedbackConsumedEvent>(_onFeedbackConsumed);
+    on<OnboardingNavigationConsumedEvent>(_onNavigationConsumed);
   }
 
   Future<void> _onInitialized(
@@ -73,8 +81,8 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
     );
 
     final result = await _getDriverOnboardingProfile();
-    result.fold(
-      (Failure failure) {
+    await result.fold<Future<void>>(
+      (Failure failure) async {
         emit(
           state.copyWith(
             profileLoadStatus: OnboardingLoadStatus.failure,
@@ -82,8 +90,13 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
           ),
         );
       },
-      (DriverOnboardingProfile profile) {
-        _saveStatus(profile.onboardingStatus);
+      (DriverOnboardingProfile profile) async {
+        await _saveStatus(
+          onboardingStatus: profile.onboardingStatus,
+          hasCompletedProfileDetails: _hasCompletedProfileDetails(
+            profile.onboardingStatus,
+          ),
+        );
         emit(
           state.copyWith(
             fullName: profile.name,
@@ -112,6 +125,7 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
       state.copyWith(
         fullName: event.fullName,
         profileSubmissionStatus: OnboardingSubmissionStatus.initial,
+        showPersonalValidationErrors: false,
         clearFailure: true,
       ),
     );
@@ -125,6 +139,7 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
       state.copyWith(
         dateOfBirth: event.dateOfBirth,
         profileSubmissionStatus: OnboardingSubmissionStatus.initial,
+        showPersonalValidationErrors: false,
         clearFailure: true,
       ),
     );
@@ -138,6 +153,7 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
       state.copyWith(
         gender: event.gender,
         profileSubmissionStatus: OnboardingSubmissionStatus.initial,
+        showPersonalValidationErrors: false,
         clearFailure: true,
       ),
     );
@@ -151,6 +167,7 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
       state.copyWith(
         address: event.address,
         profileSubmissionStatus: OnboardingSubmissionStatus.initial,
+        showPersonalValidationErrors: false,
         clearFailure: true,
       ),
     );
@@ -163,6 +180,45 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
     emit(state.copyWith(referralCode: event.referralCode, clearFailure: true));
   }
 
+  Future<void> _onDatePickerRequested(
+    OnboardingDatePickerRequestedEvent event,
+    Emitter<OnboardingState> emit,
+  ) async {
+    emit(
+      state.copyWith(datePickerRequestCount: state.datePickerRequestCount + 1),
+    );
+  }
+
+  Future<void> _onDatePickerConsumed(
+    OnboardingDatePickerConsumedEvent event,
+    Emitter<OnboardingState> emit,
+  ) async {
+    emit(state.copyWith(datePickerRequestCount: 0));
+  }
+
+  Future<void> _onPersonalDetailsContinueRequested(
+    OnboardingPersonalDetailsContinueRequestedEvent event,
+    Emitter<OnboardingState> emit,
+  ) async {
+    if (!state.canContinuePersonalDetails) {
+      emit(
+        state.copyWith(
+          showPersonalValidationErrors: true,
+          failure: const ValidationFailure(),
+        ),
+      );
+      return;
+    }
+
+    emit(
+      state.copyWith(
+        showPersonalValidationErrors: false,
+        navigationTarget: OnboardingNavigationTarget.vehicleDetails,
+        clearFailure: true,
+      ),
+    );
+  }
+
   Future<void> _onVehicleTypeChanged(
     OnboardingVehicleTypeChangedEvent event,
     Emitter<OnboardingState> emit,
@@ -171,6 +227,7 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
       state.copyWith(
         vehicleType: event.vehicleType,
         profileSubmissionStatus: OnboardingSubmissionStatus.initial,
+        showVehicleValidationErrors: false,
         clearFailure: true,
       ),
     );
@@ -184,6 +241,7 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
       state.copyWith(
         vehicleRegistrationNumber: event.registrationNumber.toUpperCase(),
         profileSubmissionStatus: OnboardingSubmissionStatus.initial,
+        showVehicleValidationErrors: false,
         clearFailure: true,
       ),
     );
@@ -202,6 +260,7 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
       state.copyWith(
         passengerCapacity: state.passengerCapacity + 1,
         profileSubmissionStatus: OnboardingSubmissionStatus.initial,
+        showVehicleValidationErrors: false,
         clearFailure: true,
       ),
     );
@@ -220,6 +279,7 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
       state.copyWith(
         passengerCapacity: state.passengerCapacity - 1,
         profileSubmissionStatus: OnboardingSubmissionStatus.initial,
+        showVehicleValidationErrors: false,
         clearFailure: true,
       ),
     );
@@ -238,6 +298,7 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
         state.copyWith(
           profileSubmissionStatus: OnboardingSubmissionStatus.failure,
           failure: const ValidationFailure(),
+          showPersonalValidationErrors: true,
         ),
       );
       return;
@@ -249,6 +310,7 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
         state.copyWith(
           profileSubmissionStatus: OnboardingSubmissionStatus.failure,
           failure: const ValidationFailure(),
+          showVehicleValidationErrors: true,
         ),
       );
       return;
@@ -270,8 +332,8 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
       gender: state.gender,
     );
 
-    result.fold(
-      (Failure failure) {
+    await result.fold<Future<void>>(
+      (Failure failure) async {
         emit(
           state.copyWith(
             profileSubmissionStatus: OnboardingSubmissionStatus.failure,
@@ -279,8 +341,11 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
           ),
         );
       },
-      (DriverOnboardingProfile profile) {
-        _saveStatus(profile.onboardingStatus);
+      (DriverOnboardingProfile profile) async {
+        await _saveStatus(
+          onboardingStatus: profile.onboardingStatus,
+          hasCompletedProfileDetails: true,
+        );
         emit(
           state.copyWith(
             phoneNumber: profile.phoneNumber.isNotEmpty
@@ -288,10 +353,41 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
                 : state.phoneNumber,
             onboardingStatus: profile.onboardingStatus,
             profileSubmissionStatus: OnboardingSubmissionStatus.success,
+            showVehicleValidationErrors: false,
             clearFailure: true,
           ),
         );
       },
+    );
+  }
+
+  Future<void> _onDocumentsSubmitted(
+    OnboardingDocumentsSubmittedEvent event,
+    Emitter<OnboardingState> emit,
+  ) async {
+    if (state.isSubmittingDocuments) {
+      return;
+    }
+
+    emit(
+      state.copyWith(
+        documentsSubmissionStatus: OnboardingSubmissionStatus.loading,
+        clearFailure: true,
+      ),
+    );
+
+    await _saveStatus(
+      onboardingStatus: DriverOnboardingStatus.documentsUploaded,
+      hasCompletedProfileDetails: true,
+    );
+
+    emit(
+      state.copyWith(
+        onboardingStatus: DriverOnboardingStatus.documentsUploaded,
+        documentsSubmissionStatus: OnboardingSubmissionStatus.success,
+        navigationTarget: OnboardingNavigationTarget.splash,
+        clearFailure: true,
+      ),
     );
   }
 
@@ -311,8 +407,8 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
     );
 
     final result = await _getDriverOnboardingProfile();
-    result.fold(
-      (Failure failure) {
+    await result.fold<Future<void>>(
+      (Failure failure) async {
         emit(
           state.copyWith(
             statusRefreshStatus: OnboardingLoadStatus.failure,
@@ -320,8 +416,13 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
           ),
         );
       },
-      (DriverOnboardingProfile profile) {
-        _saveStatus(profile.onboardingStatus);
+      (DriverOnboardingProfile profile) async {
+        await _saveStatus(
+          onboardingStatus: profile.onboardingStatus,
+          hasCompletedProfileDetails: _hasCompletedProfileDetails(
+            profile.onboardingStatus,
+          ),
+        );
         emit(
           state.copyWith(
             onboardingStatus: profile.onboardingStatus,
@@ -340,14 +441,40 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
     emit(state.copyWith(clearFeedbackMessage: true));
   }
 
-  void _saveStatus(DriverOnboardingStatus onboardingStatus) {
+  Future<void> _onFeedbackRequested(
+    OnboardingFeedbackRequestedEvent event,
+    Emitter<OnboardingState> emit,
+  ) async {
+    emit(state.copyWith(feedbackMessage: event.message));
+  }
+
+  Future<void> _onNavigationConsumed(
+    OnboardingNavigationConsumedEvent event,
+    Emitter<OnboardingState> emit,
+  ) async {
+    emit(state.copyWith(clearNavigationTarget: true));
+  }
+
+  Future<void> _saveStatus({
+    required DriverOnboardingStatus onboardingStatus,
+    required bool hasCompletedProfileDetails,
+  }) async {
     final DriverSession? session = _authSessionService.currentSession;
     if (session == null) {
       return;
     }
 
-    _authSessionService.saveSession(
-      session.copyWith(onboardingStatus: onboardingStatus),
+    await _authSessionService.saveSession(
+      session.copyWith(
+        onboardingStatus: onboardingStatus,
+        hasCompletedProfileDetails: hasCompletedProfileDetails,
+      ),
     );
+  }
+
+  bool _hasCompletedProfileDetails(DriverOnboardingStatus status) {
+    return status == DriverOnboardingStatus.documentsUploaded ||
+        status == DriverOnboardingStatus.approved ||
+        status == DriverOnboardingStatus.rejected;
   }
 }

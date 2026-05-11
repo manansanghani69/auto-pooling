@@ -185,6 +185,22 @@ class DriverOtpRouteArgs {
 }
 
 /// generated route for
+/// [DriverSplashScreen]
+class DriverSplashRoute extends PageRouteInfo<void> {
+  const DriverSplashRoute({List<PageRouteInfo>? children})
+    : super(DriverSplashRoute.name, initialChildren: children);
+
+  static const String name = 'DriverSplashRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const DriverSplashScreen();
+    },
+  );
+}
+
+/// generated route for
 /// [HomeScreen]
 class HomeRoute extends PageRouteInfo<void> {
   const HomeRoute({List<PageRouteInfo>? children})

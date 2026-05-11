@@ -14,13 +14,31 @@ class DriverLoginBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<AuthBloc, AuthState>(
-      listenWhen: (AuthState previous, AuthState current) =>
-          previous.requestOtpStatus != current.requestOtpStatus &&
-          current.requestOtpStatus == AuthSubmissionStatus.success,
-      listener: (BuildContext context, AuthState state) {
-        context.pushRoute(DriverOtpRoute(authBloc: context.read<AuthBloc>()));
-      },
+    return MultiBlocListener(
+      listeners: <BlocListener<AuthBloc, AuthState>>[
+        BlocListener<AuthBloc, AuthState>(
+          listenWhen: (AuthState previous, AuthState current) =>
+              previous.requestOtpStatus != current.requestOtpStatus &&
+              current.requestOtpStatus == AuthSubmissionStatus.success,
+          listener: (BuildContext context, AuthState state) {
+            context.pushRoute(
+              DriverOtpRoute(authBloc: context.read<AuthBloc>()),
+            );
+          },
+        ),
+        BlocListener<AuthBloc, AuthState>(
+          listenWhen: (AuthState previous, AuthState current) =>
+              previous.helpDialogRequestCount != current.helpDialogRequestCount,
+          listener: (BuildContext context, AuthState state) {
+            showDialog<void>(
+              context: context,
+              builder: (BuildContext dialogContext) {
+                return const DriverLoginHelpDialog();
+              },
+            );
+          },
+        ),
+      ],
       child: Scaffold(
         backgroundColor: context.currentTheme.backgroundPrimary,
         body: const SafeArea(

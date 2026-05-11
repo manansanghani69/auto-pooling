@@ -1,5 +1,6 @@
 import 'package:auto_pooling_driver/core/errors/error_reporter.dart';
 import 'package:auto_pooling_driver/core/services/app_bloc_observer.dart';
+import 'package:auto_pooling_driver/presentation/auth/bloc/auth_gate_bloc.dart';
 import 'package:auto_pooling_driver/presentation/auth/bloc/auth_bloc.dart';
 import 'package:auto_pooling_driver/presentation/auth/data/datasources/auth_remote_data_source.dart';
 import 'package:auto_pooling_driver/presentation/auth/data/repositories/auth_repository_impl.dart';
@@ -22,6 +23,7 @@ import 'package:auto_pooling_driver/services/api_client.dart';
 import 'package:auto_pooling_driver/services/auth_session_service.dart';
 import 'package:auto_pooling_driver/services/theme_service.dart';
 import 'package:get_it/get_it.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 final GetIt sl = GetIt.instance;
 
@@ -35,7 +37,11 @@ Future<void> configureDependencies() async {
     () => AppBlocObserver(errorReporter: sl()),
   );
   sl.registerLazySingleton<ApiClient>(HttpApiClient.new);
-  sl.registerLazySingleton<AuthSessionService>(InMemoryAuthSessionService.new);
+  final SharedPreferences preferences = await SharedPreferences.getInstance();
+  sl.registerLazySingleton<SharedPreferences>(() => preferences);
+  sl.registerLazySingleton<AuthSessionService>(
+    () => SharedPreferencesAuthSessionService(preferences: sl()),
+  );
   sl.registerLazySingleton<ThemeService>(ThemeServiceImpl.new);
   sl.registerLazySingleton<AuthRemoteDataSource>(
     () => AuthRemoteDataSourceImpl(apiClient: sl()),
@@ -78,6 +84,9 @@ Future<void> configureDependencies() async {
       verifyDriverOtp: sl(),
       authSessionService: sl(),
     ),
+  );
+  sl.registerFactory<AuthGateBloc>(
+    () => AuthGateBloc(authSessionService: sl()),
   );
   sl.registerFactory<OnboardingBloc>(
     () => OnboardingBloc(

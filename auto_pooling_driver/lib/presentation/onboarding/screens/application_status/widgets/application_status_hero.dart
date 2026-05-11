@@ -94,21 +94,21 @@ class _ApplicationStatusCopy {
           title: context.localization.authStatusPendingTitle,
           description: context.localization.onboardingStatusPendingDescription,
           icon: Icons.hourglass_top_rounded,
-          pulseColor: Colors.orange,
+          pulseColor: context.currentTheme.accentSecondary,
         );
       case DriverOnboardingStatus.rejected:
         return _ApplicationStatusCopy(
           title: context.localization.authStatusRejectedTitle,
           description: context.localization.authStatusRejectedDescription,
           icon: Icons.error_outline_rounded,
-          pulseColor: Colors.redAccent,
+          pulseColor: context.currentTheme.accentSecondary,
         );
       case DriverOnboardingStatus.approved:
         return _ApplicationStatusCopy(
           title: context.localization.onboardingApprovedTitle,
           description: context.localization.onboardingApprovedDescription,
           icon: Icons.verified_rounded,
-          pulseColor: Colors.green,
+          pulseColor: context.currentTheme.accentPrimary,
         );
       case DriverOnboardingStatus.infoRemaining:
       case DriverOnboardingStatus.unknown:
@@ -116,7 +116,7 @@ class _ApplicationStatusCopy {
           title: context.localization.authStatusUnknownTitle,
           description: context.localization.authStatusUnknownDescription,
           icon: Icons.help_outline_rounded,
-          pulseColor: Colors.grey,
+          pulseColor: context.currentTheme.textNeutralSecondary,
         );
     }
   }

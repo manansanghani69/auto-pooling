@@ -107,7 +107,9 @@ class _TimelineRow extends StatelessWidget {
                         ? Icons.schedule_rounded
                         : Icons.radio_button_unchecked_rounded,
                     size: 16,
-                    color: isDone ? Colors.white : markerColor,
+                    color: isDone
+                        ? context.currentTheme.backgroundSurface
+                        : markerColor,
                   ),
                 ),
                 if (!isLast)
